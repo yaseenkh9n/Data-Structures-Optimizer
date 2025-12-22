@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1058</width>
+    <height>652</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DSA Optimizer</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+/* Main Window - Dark Theme */
+QMainWindow {
+    background-color: #1a1d2e;
+}
+
+/* Sidebar */
+#sidebar {
+    background-color: #151824;
+    border-right: 1px solid #2a2d3e;
+}
+
+/* List Widget Sidebar */
+QListWidget#sidebarList {
+    background-color: #151824;
+    border: none;
+    outline: none;
+    color: #8b92a7;
+    font-size: 14px;
+}
+
+QListWidget#sidebarList::item {
+    padding: 15px 20px;
+    border: none;
+    border-left: 3px solid transparent;
+}
+
+QListWidget#sidebarList::item:hover {
+    background-color: #1f2333;
+    color: #ffffff;
+}
+
+QListWidget#sidebarList::item:selected {
+    background-color: #1f2333;
+    color: #00d4ff;
+    border-left: 3px solid #00d4ff;
+}
+
+/* Content Area */
+#contentArea {
+    background-color: #1a1d2e;
+}
+
+/* Welcome Title */
+#welcomeTitle {
+    color: #ffffff;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+#welcomeSubtitle {
+    color: #8b92a7;
+    font-size: 16px;
+}
+
+/* Primary Button */
+QPushButton#primaryButton {
+    background-color: #00d4ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 40px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+QPushButton#primaryButton:hover {
+    background-color: #00b8e6;
+}
+
+/* Secondary Button */
+QPushButton#secondaryButton {
+    background-color: #2a2d3e;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 40px;
+    font-size: 16px;
+}
+
+QPushButton#secondaryButton:hover {
+    background-color: #353847;
+}
+
+/* Cards */
+QFrame#card {
+    background-color: #1f2333;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+QFrame#card_2 {
+    background-color: #1f2333;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+QFrame#card_3 {
+    background-color: #1f2333;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Card Titles */
+QLabel#cardTitle, QLabel#cardTitle_2, QLabel#cardTitle_3, QLabel#cardTitle_4 {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Card Text */
+QLabel#cardText, QLabel#cardText_2, QLabel#cardText_3, QLabel#cardText_4, QLabel#cardText_5, QLabel#cardText_6 {
+    color: #8b92a7;
+    font-size: 14px;
+}
+
+/* Highlight Text */
+QLabel#highlightText {
+    color: #00d4ff;
+    font-size: 48px;
+    font-weight: bold;
+}
+
+/* Logo Text */
+#logoText {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Settings Button */
+QPushButton#settingsButton {
+    background-color: transparent;
+    border: none;
+    color: #8b92a7;
+    font-size: 20px;
+}
+
+QPushButton#settingsButton:hover {
+    color: #ffffff;
+}
+   </string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="sidebar">
+      <property name="minimumSize">
+       <size>
+        <width>250</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>250</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="logoFrame">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
+          <property name="leftMargin">
+           <number>20</number>
+          </property>
+          <property name="topMargin">
+           <number>15</number>
+          </property>
+          <property name="rightMargin">
+           <number>20</number>
+          </property>
+          <property name="bottomMargin">
+           <number>15</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="logoIcon">
+            <property name="minimumSize">
+             <size>
+              <width>50</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>150</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap resource="../resources/resources.qrc">:/Icons/Generated_Image_November_15__2025_-_6_47PM-removebg-preview.png</pixmap>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QListWidget" name="sidebarList">
+         <property name="styleSheet">
+          <string notr="true">
+QListWidget#sidebarList{
+border-right: 1px solid rgba(255, 255, 255, 30);
+}
+QListWidget#sidebarList::item { 
+    background-color: rgba(255, 255, 255, 30); 
+    border-radius: 5px; 
+    color: #ffffff; 
+    padding: 5px 8px; 
+    margin: 2px 5px; 
+   height: 40px;
+}</string>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Shadow::Plain</enum>
+         </property>
+         <item>
+          <property name="text">
+           <string>Dashboard</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../resources/resources.qrc">
+            <normaloff>:/Icons/home_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</normaloff>:/Icons/home_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Analysis</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../resources/resources.qrc">
+            <normaloff>:/Icons/analytics_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.svg</normaloff>:/Icons/analytics_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Results</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../resources/resources.qrc">
+            <normaloff>:/Icons/bar_chart_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</normaloff>:/Icons/bar_chart_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>  Help</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../resources/resources.qrc">
+            <normaloff>:/Icons/help_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</normaloff>:/Icons/help_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</iconset>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="contentArea">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="leftMargin">
+        <number>40</number>
+       </property>
+       <property name="topMargin">
+        <number>30</number>
+       </property>
+       <property name="rightMargin">
+        <number>40</number>
+       </property>
+       <property name="bottomMargin">
+        <number>30</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="settingsButton">
+           <property name="styleSheet">
+            <string notr="true">color: rgba(62, 71, 255, 245);</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources/resources.qrc">
+             <normaloff>:/Icons/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</normaloff>:/Icons/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>40</width>
+             <height>40</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="welcomeTitle">
+         <property name="text">
+          <string>Welcome to 
+Data Structure Optimizer</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="welcomeSubtitle">
+         <property name="text">
+          <string>Analyze, benchmark, and discover the best data structures intelligently.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QPushButton" name="primaryButton">
+           <property name="text">
+            <string>Start New Analysis</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="secondaryButton">
+           <property name="text">
+            <string>Load Previous Results</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QFrame" name="card">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QLabel" name="cardTitle">
+              <property name="text">
+               <string>Last Run Summary</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText">
+              <property name="text">
+               <string>dataset_001.csv</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_7">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText_2">
+              <property name="text">
+               <string>Best Data Structure</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardTitle_2">
+              <property name="text">
+               <string>HashMap</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_8">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="card_2">
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="cardTitle_3">
+              <property name="text">
+               <string>Top Performing Structure</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_9">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="highlightText">
+              <property name="text">
+               <string>95%</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_10">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText_3">
+              <property name="text">
+               <string>Accuracy</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_11">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="card_3">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="cardTitle_4">
+              <property name="text">
+               <string>Recent Datasets</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_12">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText_4">
+              <property name="text">
+               <string>dataset_005.csv</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText_5">
+              <property name="text">
+               <string>dataset_004.csv</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="cardText_6">
+              <property name="text">
+               <string>dataset_003.csv</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_13">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_14">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

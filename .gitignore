@@ -1,0 +1,28 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+
+# Qt files
+*.user
+*.autosave
+*.pro.user*
+
+# C++ compiled files
+*.o
+*.obj
+*.exe
+*.out
+*.app
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+*~
+resources/Icons/vm-host-modules/

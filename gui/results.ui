@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Results</class>
+ <widget class="QWidget" name="Results">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1058</width>
+    <height>1280</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Analysis Results - DSA Optimizer</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Content Area */
+#contentArea {
+    background-color: #1a1d2e;
+}
+
+/* Page Title */
+#pageTitle {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+#pageSubtitle {
+    color: #8b92a7;
+    font-size: 14px;
+}
+
+/* Group Boxes */
+QGroupBox {
+    background-color: #1f2333;
+    border: 1px solid #2a2d3e;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 10px;
+    background-color: #1f2333;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+/* Labels */
+QLabel {
+    color: #ffffff;
+}
+
+QLabel[font-style=&quot;italic&quot;] {
+    color: #8b92a7;
+    font-style: italic;
+}
+
+/* Result Cards */
+QFrame#resultCard {
+    background-color: #1f2333;
+    border: 1px solid #2a2d3e;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+QFrame#topPerformerCard {
+    background-color: rgba(0, 212, 255, 0.1);
+    border: 2px solid #00d4ff;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+/* Buttons */
+QPushButton {
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: normal;
+    padding: 12px 24px;
+}
+
+QPushButton#newAnalysisButton {
+    background-color: #00d4ff;
+    color: #ffffff;
+    border: none;
+    font-weight: bold;
+    min-width: 180px;
+    min-height: 45px;
+}
+
+QPushButton#newAnalysisButton:hover {
+    background-color: #00b8e6;
+}
+
+QPushButton#exportButton {
+    background-color: #2a2d3e;
+    color: #ffffff;
+    border: 1px solid #353847;
+    min-width: 150px;
+    min-height: 45px;
+}
+
+QPushButton#exportButton:hover {
+    background-color: #353847;
+    border-color: #00d4ff;
+}
+
+QPushButton#settingsButton {
+    background-color: transparent;
+    border: none;
+    color: #8b92a7;
+    font-size: 20px;
+}
+
+QPushButton#settingsButton:hover {
+    color: #ffffff;
+}
+
+/* Data Structure Tags */
+QLabel.dsTag {
+    background-color: rgba(0, 212, 255, 0.2);
+    border: 1px solid #00d4ff;
+    border-radius: 16px;
+    padding: 6px 16px;
+    color: #00d4ff;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Performance Value */
+QLabel.performanceValue {
+    color: #00d4ff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Recommendation Text */
+QLabel.recommendationText {
+    color: #4ade80;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Warning Text */
+QLabel.warningText {
+    color: #ff6b6b;
+    font-size: 14px;
+}
+
+/* Graph Placeholder */
+QFrame#graphPlaceholder {
+    background-color: transparent;
+    border: none;
+}
+
+/* Scroll Area */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollArea &gt; QWidget &gt; QWidget {
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    background-color: #2a2d3e;
+    width: 10px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #353847;
+    border-radius: 5px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #00d4ff;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+/* Scroll Area Content */
+#scrollContentWidget {
+    background-color: #1a1d2e;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollContentWidget">
+      <property name="objectName">
+       <string>scrollContentWidget</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>20</number>
+       </property>
+       <property name="leftMargin">
+        <number>40</number>
+       </property>
+       <property name="topMargin">
+        <number>30</number>
+       </property>
+       <property name="rightMargin">
+        <number>40</number>
+       </property>
+       <property name="bottomMargin">
+        <number>30</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="pageTitle">
+           <property name="font">
+            <font>
+             <pointsize>-1</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Analysis Results</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="exportButton">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>📥 Export Results</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="newAnalysisButton">
+           <property name="minimumSize">
+            <size>
+             <width>228</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>+ New Analysis</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="pageSubtitle">
+         <property name="text">
+          <string>Detailed performance comparison of data structures based on your configuration</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QFrame" name="topPerformerCard">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QLabel" name="recommendationLabel">
+              <property name="styleSheet">
+               <string notr="true">color: #8b92a7; font-size: 12px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>🏆 RECOMMENDED DATA STRUCTURE</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="recommendationText">
+              <property name="styleSheet">
+               <string notr="true">color: #4ade80; font-size: 20px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>Hash Table (Separate Chaining)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>15</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QLabel" name="performanceLabel">
+                <property name="styleSheet">
+                 <string notr="true">color: #8b92a7; font-size: 14px;</string>
+                </property>
+                <property name="text">
+                 <string>Performance Score:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="performanceValue">
+                <property name="styleSheet">
+                 <string notr="true">color: #00d4ff; font-size: 18px; font-weight: bold;</string>
+                </property>
+                <property name="text">
+                 <string>94.2%</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="warningText">
+              <property name="styleSheet">
+               <string notr="true">color: #ff6b6b; font-size: 12px;</string>
+              </property>
+              <property name="text">
+               <string>⚠️ Hash collisions may occur with large datasets</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="analysisInfoCard">
+           <property name="styleSheet">
+            <string notr="true">background-color: #1f2333; border: 1px solid #2a2d3e; border-radius: 12px; padding: 20px;</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QLabel" name="analysisInfoLabel">
+              <property name="styleSheet">
+               <string notr="true">color: #8b92a7; font-size: 12px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>📊 ANALYSIS DETAILS</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Orientation::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Policy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="gridLayout">
+              <property name="horizontalSpacing">
+               <number>30</number>
+              </property>
+              <property name="verticalSpacing">
+               <number>10</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="datasetLabel">
+                <property name="styleSheet">
+                 <string notr="true">color: #8b92a7;</string>
+                </property>
+                <property name="text">
+                 <string>Dataset:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="datasetValue">
+                <property name="styleSheet">
+                 <string notr="true">color: #ffffff; font-weight: bold;</string>
+                </property>
+                <property name="text">
+                 <string>user_data_001.csv</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="sizeLabel">
+                <property name="styleSheet">
+                 <string notr="true">color: #8b92a7;</string>
+                </property>
+                <property name="text">
+                 <string>Size:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="sizeValue">
+                <property name="styleSheet">
+                 <string notr="true">color: #ffffff; font-weight: bold;</string>
+                </property>
+                <property name="text">
+                 <string>10,000 elements</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="operationsLabel">
+                <property name="styleSheet">
+                 <string notr="true">color: #8b92a7;</string>
+                </property>
+                <property name="text">
+                 <string>Operations:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLabel" name="operationsValue">
+                <property name="styleSheet">
+                 <string notr="true">color: #ffffff; font-weight: bold;</string>
+                </property>
+                <property name="text">
+                 <string>Search 60% | Insert 25% | Delete 15%</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>25</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="graphGroup">
+         <property name="title">
+          <string>📈 Performance Comparison</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="graphHint">
+            <property name="styleSheet">
+             <string notr="true">color: #8b92a7; font-style: italic; font-size: 12px;</string>
+            </property>
+            <property name="text">
+             <string>Relative performance scores across different data structures (higher is better)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="graphPlaceholder">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>200</height>
+             </size>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>20</number>
+             </property>
+             <property name="topMargin">
+              <number>20</number>
+             </property>
+             <property name="rightMargin">
+              <number>20</number>
+             </property>
+             <property name="bottomMargin">
+              <number>20</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="graphText">
+               <property name="styleSheet">
+                <string notr="true">color: #8b92a7; text-align: center; font-size: 14px;</string>
+               </property>
+               <property name="text">
+                <string>[Performance Graph Placeholder - Implement with PyQtChart or Matplotlib]</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Policy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="detailedResultsGroup">
+         <property name="title">
+          <string>🔍 Detailed Results by Data Structure</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <property name="spacing">
+           <number>15</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="resultsGrid">
+            <property name="horizontalSpacing">
+             <number>20</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>15</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QFrame" name="resultCard">
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QLabel" name="dsTag1">
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgba(0, 212, 255, 0.2); border: 1px solid #00d4ff; border-radius: 16px; padding: 6px 16px; color: #00d4ff; font-size: 13px; font-weight: bold;</string>
+                 </property>
+                 <property name="text">
+                  <string>Hash Table</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_9">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Policy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QLabel" name="label_10">
+                   <property name="styleSheet">
+                    <string notr="true">color: #8b92a7;</string>
+                   </property>
+                   <property name="text">
+                    <string>Score:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="hashScore">
+                   <property name="styleSheet">
+                    <string notr="true">color: #00d4ff; font-weight: bold;</string>
+                   </property>
+                   <property name="text">
+                    <string>94.2%</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="hashNotes">
+                 <property name="styleSheet">
+                  <string notr="true">color: #8b92a7; font-size: 12px;</string>
+                 </property>
+                 <property name="text">
+                  <string>• Fast search O(1) average
+• Good for mixed operations
+• Memory: Medium</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QFrame" name="resultCard_2">
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QLabel" name="dsTag2">
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgba(0, 212, 255, 0.2); border: 1px solid #00d4ff; border-radius: 16px; padding: 6px 16px; color: #00d4ff; font-size: 13px; font-weight: bold;</string>
+                 </property>
+                 <property name="text">
+                  <string>Balanced BST</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_10">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Policy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <widget class="QLabel" name="label_12">
+                   <property name="styleSheet">
+                    <string notr="true">color: #8b92a7;</string>
+                   </property>
+                   <property name="text">
+                    <string>Score:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="bstScore">
+                   <property name="styleSheet">
+                    <string notr="true">color: #00d4ff; font-weight: bold;</string>
+                   </property>
+                   <property name="text">
+                    <string>87.5%</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="bstNotes">
+                 <property name="styleSheet">
+                  <string notr="true">color: #8b92a7; font-size: 12px;</string>
+                 </property>
+                 <property name="text">
+                  <string>• Consistent O(log n)
+• Ordered operations
+• Memory: Low</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QFrame" name="resultCard_3">
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QLabel" name="dsTag3">
+                 <property name="styleSheet">
+                  <string notr="true">background-color: rgba(255, 107, 107, 0.2); border: 1px solid #ff6b6b; border-radius: 16px; padding: 6px 16px; color: #ff6b6b; font-size: 13px; font-weight: bold;</string>
+                 </property>
+                 <property name="text">
+                  <string>Array</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_11">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Policy::Fixed</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>10</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_8">
+                 <item>
+                  <widget class="QLabel" name="label_14">
+                   <property name="styleSheet">
+                    <string notr="true">color: #8b92a7;</string>
+                   </property>
+                   <property name="text">
+                    <string>Score:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="arrayScore">
+                   <property name="styleSheet">
+                    <string notr="true">color: #ff6b6b; font-weight: bold;</string>
+                   </property>
+                   <property name="text">
+                    <string>62.3%</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="arrayNotes">
+                 <property name="styleSheet">
+                  <string notr="true">color: #8b92a7; font-size: 12px;</string>
+                 </property>
+                 <property name="text">
+                  <string>• Slow insert/delete O(n)
+• Fast sequential access
+• Memory: Very Low</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_12">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

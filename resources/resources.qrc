@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Icons/logo.svg</file>
+        <file>Icons/account_tree_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/bar_chart_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/dataset_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/Generated_Image_November_15__2025_-_6_47PM-removebg-preview.png</file>
+        <file>Icons/help_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/home_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/settings_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>Icons/analytics_64dp_E3E3E3_FILL0_wght400_GRAD0_opsz48.svg</file>
+    </qresource>
+    <qresource prefix="/new/prefix1"/>
+</RCC>

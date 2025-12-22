@@ -1,0 +1,846 @@
+
+#include "mainwindow.h"
+#include "gui/ui_mainwindow.h"
+
+#include <QVBoxLayout>
+#include <QListWidget>
+#include <QProgressDialog>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QComboBox>
+#include <QSlider>
+#include <QCheckBox>
+#include <QSpinBox>
+#include <fstream>
+#include <random>
+#include <thread>
+#include <QStyleFactory>
+#include <sstream>
+#include <iostream>
+#include <QtCharts>
+#include <QTextBrowser>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    dataAnalyzer(new DataAnalyzer()),
+    recommendationEngine(new RecommendationEngine()),
+    intBenchmark(new Benchmark<int>()),
+    stringBenchmark(new Benchmark<std::string>())
+{
+    // Apply Modern Dark Theme
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+    QPalette p = qApp->palette();
+    p.setColor(QPalette::Window, QColor(53, 53, 53));
+    p.setColor(QPalette::WindowText, Qt::white);
+    p.setColor(QPalette::Base, QColor(42, 42, 42));
+    p.setColor(QPalette::AlternateBase, QColor(66, 66, 66));
+    p.setColor(QPalette::ToolTipBase, Qt::white);
+    p.setColor(QPalette::ToolTipText, Qt::white);
+    p.setColor(QPalette::Text, Qt::white);
+    p.setColor(QPalette::Button, QColor(53, 53, 53));
+    p.setColor(QPalette::ButtonText, Qt::white);
+    p.setColor(QPalette::BrightText, Qt::red);
+    p.setColor(QPalette::Link, QColor(42, 130, 218));
+    p.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    p.setColor(QPalette::HighlightedText, Qt::black);
+    qApp->setPalette(p);
+    
+    // Additional styling for specific widgets
+    QString styleSheet = R"(
+        QMainWindow {
+            background-color: #353535;
+        }
+        QDialog, QMessageBox {
+            background-color: #353535;
+            color: white;
+        }
+        QMessageBox QLabel {
+            color: white;
+        }
+        QPushButton {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 5px;
+            padding: 8px 16px;
+            font-weight: bold;
+            border: none;
+        }
+        QPushButton:hover {
+            background-color: #0b5ed7;
+        }
+        QPushButton:pressed {
+            background-color: #0a58ca;
+        }
+        QListWidget {
+            background-color: #353535;
+            border-right: 1px solid #444;
+            outline: none;
+        }
+        QListWidget::item {
+            color: #ccc;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 2px 5px;
+        }
+        QListWidget::item:selected {
+            background-color: #3d3d3d;
+            color: white;
+        }
+        QListWidget::item:hover {
+            background-color: #353535;
+        }
+        QLabel {
+            color: #eee;
+        }
+        QComboBox, QSpinBox {
+            background-color: #3d3d3d;
+            color: white;
+            border: 1px solid #555;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        QProgressBar {
+            border: 1px solid #444;
+            border-radius: 5px;
+            text-align: center;
+        }
+        QProgressBar::chunk {
+            background-color: #0d6efd;
+        }
+    )";
+    qApp->setStyleSheet(styleSheet);
+
+    ui->setupUi(this);
+    setMinimumSize(1200, 650);
+
+    // STACK
+    stack = new QStackedWidget(this);
+
+    // Take existing dashboard layout
+    dashboardPage = new QWidget();
+    dashboardPage->setLayout(ui->contentArea->layout());
+
+    analysisPage = new NewAnalysis(this);
+    resultsPage = new Results(this);
+
+    stack->addWidget(dashboardPage); // 0
+    stack->addWidget(analysisPage);  // 1
+    stack->addWidget(resultsPage);   // 2
+
+    // Remove old layout safely
+    QLayout *oldLayout = ui->contentArea->layout();
+    delete oldLayout;
+
+    QVBoxLayout *layout = new QVBoxLayout(ui->contentArea);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(stack);
+
+    stack->setCurrentIndex(0);
+
+    // CONNECTIONS
+    // Sidebar navigation
+    connect(ui->sidebarList, &QListWidget::currentRowChanged, this, &MainWindow::onSidebarItemClicked);
+
+    // Dashboard buttons
+    connect(ui->primaryButton, &QPushButton::clicked, this, &MainWindow::onStartAnalysisClicked);
+    connect(ui->secondaryButton, &QPushButton::clicked, this, &MainWindow::onLoadResultsClicked);
+
+    // Analysis page buttons
+    connect(analysisPage->findChild<QPushButton*>("backButton"), &QPushButton::clicked,
+            this, &MainWindow::onBackButtonClicked);
+    connect(analysisPage->findChild<QPushButton*>("startAnalysisButton"), &QPushButton::clicked,
+            this, &MainWindow::onStartAnalysisFromNewPage);
+
+    // Results page buttons
+    connect(resultsPage->findChild<QPushButton*>("exportButton"), &QPushButton::clicked,
+            this, &MainWindow::onExportResultsClicked);
+    connect(resultsPage->findChild<QPushButton*>("newAnalysisButton"), &QPushButton::clicked,
+            this, &MainWindow::onNewAnalysisFromResults);
+    
+    // Settings Button (Dashboard) - Assuming it's in the main UI file
+    QPushButton* dashboardSettings = this->findChild<QPushButton*>("settingsButton");
+    if (dashboardSettings) {
+        connect(dashboardSettings, &QPushButton::clicked, this, &MainWindow::onSettingsClicked);
+    }
+
+    // Settings Button (New Analysis) - Assuming it's in the NewAnalysis widget
+    // Since NewAnalysis is a custom widget promoted or added, we find it there.
+    // analysisPage is likely the NewAnalysis widget instance.
+    if (analysisPage) {
+        QPushButton* analysisSettings = analysisPage->findChild<QPushButton*>("settingsButton");
+        if (analysisSettings) {
+            connect(analysisSettings, &QPushButton::clicked, this, &MainWindow::onSettingsClicked);
+        }
+    }
+    
+    // Help Button
+    if (ui->sidebarList->count() < 4) { // Assuming 0:Dash, 1:Analysis, 2:Results
+         QListWidgetItem* helpItem = new QListWidgetItem("Help");
+         helpItem->setIcon(QIcon(":/Icons/help_24dp.svg")); // Use placeholder or valid icon if exists
+         // If icon doesn't exist, it just won't show.
+         helpItem->setTextAlignment(Qt::AlignCenter);
+         ui->sidebarList->addItem(helpItem);
+    }
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+    delete dataAnalyzer;
+    delete recommendationEngine;
+    delete intBenchmark;
+    delete stringBenchmark;
+}
+
+void MainWindow::onSidebarItemClicked(int index)
+{
+    if (index >= 0 && index < stack->count()) {
+        stack->setCurrentIndex(index);
+    } else if (index == stack->count()) { 
+        // If index is count, it might be our Help item appended at the end
+        // But since we use QDialog for help, we don't switch stack, just show dialog
+        // And reset selection
+        onHelpClicked();
+    }
+}
+
+void MainWindow::onStartAnalysisClicked()
+{
+    stack->setCurrentIndex(1);
+}
+
+void MainWindow::onLoadResultsClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    "Load Previous Results", "", "CSV Files (*.csv);;All Files (*)");
+
+    if (!fileName.isEmpty()) {
+        std::ifstream file(fileName.toStdString());
+        if (!file.is_open()) {
+            QMessageBox::critical(this, "Error", "Could not open file: " + fileName);
+            return;
+        }
+
+        std::string line;
+        
+        // Skip header
+        if (!std::getline(file, line)) {
+            QMessageBox::critical(this, "Error", "File is empty or invalid format.");
+            return;
+        }
+
+        currentResults.clear();
+        currentScores.clear();
+        
+        // Assuming first line is header: Structure,DataSize,InsertTime(ms),SearchTime(ms),DeleteTime(ms),TotalTime(ms),MemoryUsed(bytes),MemoryPerElement(bytes)
+        
+        bool firstRow = true;
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string segment;
+            std::vector<std::string> parts;
+
+            while(std::getline(ss, segment, ',')) {
+                parts.push_back(segment);
+            }
+
+            if (parts.size() < 8) continue;
+
+            PerformanceMetrics metrics(parts[0]);
+            try {
+                metrics.dataSize = std::stoi(parts[1]);
+                metrics.insertTime = std::stod(parts[2]);
+                metrics.searchTime = std::stod(parts[3]);
+                metrics.deleteTime = std::stod(parts[4]);
+                metrics.totalTime = std::stod(parts[5]);
+                // metrics.memoryUsed = std::stoul(parts[6]); // stoul might overflow if size_t is larger but usually fine.
+                metrics.memoryUsed = static_cast<size_t>(std::stod(parts[6])); // Using stod to be safe if saved as float, though it should be int
+                
+                // We don't have op counts in CSV, so we can't fully reconstruct average times accurately 
+                // without count, but for UI display that only needs totals, this is OK.
+                
+                currentResults[metrics.structureName] = metrics;
+                
+                // Set profile info from first row
+                if (firstRow) {
+                     currentProfile.dataSize = metrics.dataSize;
+                     currentProfile.dataType = "Loaded Data"; // We don't save type in CSV currently
+                     currentProfile.isSorted = false; // Unknown
+                     firstRow = false;
+                }
+
+                // convert to score for recommendation
+                // We'll just generate a dummy score based on total time for now to verify it works
+               RecommendationEngine::StructureScore score;
+               score.name = metrics.structureName;
+               score.totalScore = 1000.0 / (metrics.totalTime + 1.0); // Simple inverse time score
+               currentScores.push_back(score);
+
+            } catch (...) {
+                continue; // Skip malformed lines
+            }
+        }
+        
+        // Sort scores
+        std::sort(currentScores.begin(), currentScores.end(), 
+                 [](const RecommendationEngine::StructureScore& a, const RecommendationEngine::StructureScore& b) {
+                     return a.totalScore > b.totalScore;
+                 });
+
+        // Normalize scores to percentage roughly
+        if (!currentScores.empty()) {
+            double maxScore = currentScores[0].totalScore;
+            for (auto& score : currentScores) {
+                score.totalScore = (score.totalScore / maxScore) * 100.0;
+            }
+        }
+
+        file.close();
+        
+        updateResultsPage(currentResults, currentProfile, currentScores);
+        stack->setCurrentIndex(2); // Go to results
+        
+        QMessageBox::information(this, "Success", "Results loaded successfully.");
+    }
+}
+
+void MainWindow::onBackButtonClicked()
+{
+    stack->setCurrentIndex(0);
+}
+
+void MainWindow::onStartAnalysisFromNewPage()
+{
+    // 1. Collect all inputs on the MAIN THREAD
+    AnalysisInputs inputs;
+    
+    // Get configuration from UI
+    QComboBox* dataTypeCombo = analysisPage->findChild<QComboBox*>("dataTypeCombo");
+    QComboBox* dataSourceCombo = analysisPage->findChild<QComboBox*>("dataSourceCombo");
+    QSlider* searchSlider = analysisPage->findChild<QSlider*>("searchSlider");
+    QSlider* insertSlider = analysisPage->findChild<QSlider*>("insertSlider");
+    QSlider* deleteSlider = analysisPage->findChild<QSlider*>("deleteSlider");
+    QSpinBox* dataSizeSpin = analysisPage->findChild<QSpinBox*>("dataSizeSpinBox");
+    
+    // Get constraints
+    QCheckBox* speedCheck = analysisPage->findChild<QCheckBox*>("speedCriticalCheck");
+    QCheckBox* memoryCheck = analysisPage->findChild<QCheckBox*>("memoryConstrainedCheck");
+    QCheckBox* rangeCheck = analysisPage->findChild<QCheckBox*>("rangeQueriesCheck");
+    QCheckBox* prefixCheck = analysisPage->findChild<QCheckBox*>("prefixSearchCheck");
+    QCheckBox* priorityCheck = analysisPage->findChild<QCheckBox*>("priorityQueueCheck");
+    QCheckBox* sortedCheck = analysisPage->findChild<QCheckBox*>("sortedDataCheck");
+
+    if (!dataTypeCombo || !searchSlider || !dataSizeSpin) {
+        QMessageBox::critical(this, "Error", "Could not find UI elements required for analysis.");
+        return;
+    }
+
+    inputs.dataType = dataTypeCombo->currentText().toStdString();
+    inputs.dataSize = dataSizeSpin->value();
+    
+    // Check for uploaded file
+    if (dataSourceCombo && dataSourceCombo->currentIndex() == 1) { // 1 is Upload
+        inputs.datasetPath = analysisPage->getUploadedFilePath().toStdString();
+        if (inputs.datasetPath.empty()) {
+             QMessageBox::warning(this, "No File", "Please upload a dataset file or select 'Generate Random Data'.");
+             return;
+        }
+    } else {
+        inputs.datasetPath = "";
+    }
+
+    inputs.searchPercent = searchSlider->value();
+    inputs.insertPercent = insertSlider->value();
+    inputs.deletePercent = deleteSlider->value();
+    
+    inputs.speedCritical = speedCheck ? speedCheck->isChecked() : false;
+    inputs.memoryConstrained = memoryCheck ? memoryCheck->isChecked() : false;
+    inputs.needsRangeQueries = rangeCheck ? rangeCheck->isChecked() : false;
+    inputs.needsPrefixSearch = prefixCheck ? prefixCheck->isChecked() : false;
+    inputs.needsPriorityQueue = priorityCheck ? priorityCheck->isChecked() : false;
+    inputs.isSorted = sortedCheck ? sortedCheck->isChecked() : false;
+
+    // Create progress dialog
+    // NOTE: ProgressDialog is tricky with threads. We'll use a modal dialog that we close when done.
+    QProgressDialog* progress = new QProgressDialog("Running Analysis...", "Cancel", 0, 0, this);
+    progress->setWindowModality(Qt::WindowModal);
+    progress->setMinimumDuration(0);
+    progress->setRange(0, 0); // Indeterminate progress
+    
+    // Style the progress dialog
+    progress->setStyleSheet(R"(
+        QProgressDialog { background-color: #353535; color: white; }
+        QLabel { color: white; }
+        QPushButton { background-color: #3d3d3d; border: 1px solid #555; padding: 5px 15px; border-radius: 4px; color: white; }
+        QPushButton:hover { background-color: #4d4d4d; }
+        QProgressBar { border: 1px solid #444; border-radius: 4px; text-align: center; color: white; }
+        QProgressBar::chunk { background-color: #0d6efd; }
+    )");
+    
+    progress->show();
+
+    // Run analysis in background thread
+    std::thread analysisThread([this, inputs, progress]() {
+        // Run analysis (this calls no GUI functions)
+        runAnalysis(inputs);
+        
+        // Clean up UI on main thread
+        QMetaObject::invokeMethod(this, [progress, this]() {
+            progress->close();
+            progress->deleteLater();
+            stack->setCurrentIndex(2); // Switch to results page
+        }, Qt::QueuedConnection);
+    });
+
+    analysisThread.detach(); // Detach since we handle cleanup via invokeMethod
+}
+
+std::vector<int> MainWindow::generateTestData(int size)
+{
+    std::vector<int> data;
+    data.reserve(size);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(1, 100000);
+
+    for (int i = 0; i < size; i++) {
+        data.push_back(dis(gen));
+    }
+
+    return data;
+}
+
+std::vector<std::string> MainWindow::generateTestStrings(int size)
+{
+    std::vector<std::string> data;
+    data.reserve(size);
+    std::vector<std::string> prefixes = {"app", "ban", "cat", "dog", "ele", "fox"};
+    std::vector<std::string> suffixes = {"le", "ana", "ch", "gy", "phant", "trot"};
+
+    for (int i = 0; i < size; i++) {
+        data.push_back(prefixes[i % prefixes.size()] + suffixes[i % suffixes.size()] + std::to_string(i));
+    }
+
+    return data;
+}
+
+void MainWindow::runAnalysis(AnalysisInputs inputs)
+{
+    // This runs in a BACKGROUND THREAD. Do NOT access widgets here.
+
+    int totalOps = inputs.dataSize * 2; 
+
+    if (inputs.dataType == "Integer") {
+        std::vector<int> data;
+        
+        if (!inputs.datasetPath.empty()) {
+            std::ifstream file(inputs.datasetPath);
+            if (file.is_open()) {
+                std::string line;
+                int val;
+                while (file >> val) {
+                    data.push_back(val);
+                }
+                while (std::getline(file, line)) {
+                     // Fallback for CSV-like parsing if simple stream extraction failing or mixed
+                     if (line.empty()) continue;
+                     std::stringstream ss(line);
+                     std::string segment;
+                     while(std::getline(ss, segment, ',')) {
+                         try { data.push_back(std::stoi(segment)); } catch(...) {}
+                     }
+                }
+                file.close();
+            }
+        }
+        
+        if (data.empty()) {
+             if (!inputs.datasetPath.empty()) std::cerr << "Failed to load data or empty file. Generating random." << std::endl;
+             data = generateTestData(inputs.dataSize);
+        } else {
+             // Update input size to match actual data
+             // inputs.dataSize = data.size(); // Can't update const inputs copy here easily, but we use data.size() implicitly in analysis
+        }
+
+        // Analyze data
+        currentProfile = dataAnalyzer->analyzeIntegerData(data);
+
+        // Update profile with constraints
+        currentProfile.speedCritical = inputs.speedCritical;
+        currentProfile.memoryConstrained = inputs.memoryConstrained;
+        currentProfile.needsRangeQueries = inputs.needsRangeQueries;
+        currentProfile.needsPrefixSearch = inputs.needsPrefixSearch;
+        currentProfile.needsPriorityQueue = inputs.needsPriorityQueue;
+        currentProfile.isSorted = inputs.isSorted; // Assuming DataProfile has this field or logic respects it
+
+        // Run benchmarks
+        Benchmark<int>::OperationProfile opProfile(inputs.searchPercent, inputs.insertPercent,
+                                                   inputs.deletePercent, totalOps);
+
+        currentResults = intBenchmark->runAllTests(data, opProfile);
+
+    } else if (inputs.dataType == "String") {
+        std::vector<std::string> data;
+
+        if (!inputs.datasetPath.empty()) {
+            std::ifstream file(inputs.datasetPath);
+            if (file.is_open()) {
+                std::string line;
+                while (std::getline(file, line)) {
+                    std::stringstream ss(line);
+                    std::string segment;
+                    while(std::getline(ss, segment, ',')) {
+                        // Trim
+                        segment.erase(0, segment.find_first_not_of(" \t\n\r\f\v"));
+                        segment.erase(segment.find_last_not_of(" \t\n\r\f\v") + 1);
+                        if (!segment.empty()) data.push_back(segment);
+                    }
+                }
+                file.close();
+            }
+        }
+        
+        if (data.empty()) {
+             if (!inputs.datasetPath.empty()) std::cerr << "Failed to load data or empty file. Generating random." << std::endl;
+             data = generateTestStrings(inputs.dataSize);
+        }
+
+        // Analyze data
+        currentProfile = dataAnalyzer->analyzeStringData(data);
+
+        // Update profile with constraints
+        currentProfile.speedCritical = inputs.speedCritical;
+        currentProfile.memoryConstrained = inputs.memoryConstrained;
+        currentProfile.needsRangeQueries = inputs.needsRangeQueries;
+        currentProfile.needsPrefixSearch = inputs.needsPrefixSearch;
+        currentProfile.needsPriorityQueue = inputs.needsPriorityQueue;
+        // currentProfile.isSorted = inputs.isSorted;
+
+        // Run benchmarks
+        Benchmark<std::string>::OperationProfile opProfile(inputs.searchPercent, inputs.insertPercent,
+                                                           inputs.deletePercent, totalOps);
+
+        currentResults = stringBenchmark->runAllTests(data, opProfile);
+    }
+
+    // Generate recommendations
+    RecommendationEngine::OperationProfile recOpProfile(inputs.searchPercent, inputs.insertPercent, inputs.deletePercent);
+    RecommendationEngine::Weights weights(0.5, 0.3, 0.2);
+
+    if (currentProfile.speedCritical) {
+        weights = RecommendationEngine::Weights(0.7, 0.2, 0.1);
+    } else if (currentProfile.memoryConstrained) {
+        weights = RecommendationEngine::Weights(0.3, 0.6, 0.1);
+    }
+
+    currentScores = recommendationEngine->rankStructures(currentResults, currentProfile,
+                                                         recOpProfile, weights);
+
+    // Update results page on main thread
+    QMetaObject::invokeMethod(this, [this]() {
+        updateResultsPage(currentResults, currentProfile, currentScores);
+    }, Qt::QueuedConnection);
+}
+
+void MainWindow::updateResultsPage(const std::map<std::string, PerformanceMetrics>& results,
+                                   const DataAnalyzer::DataProfile& profile,
+                                   const std::vector<RecommendationEngine::StructureScore>& scores)
+{
+    if (scores.empty()) return;
+
+    // --- Performance Graph Implementation ---
+    QFrame* graphPlaceholder = resultsPage->findChild<QFrame*>("graphPlaceholder");
+    if (graphPlaceholder) {
+        if (!graphPlaceholder->layout()) {
+            QVBoxLayout* layout = new QVBoxLayout(graphPlaceholder);
+            layout->setContentsMargins(0, 0, 0, 0);
+        }
+        
+        // Clear existing widgets
+        QLayoutItem* item;
+        while ((item = graphPlaceholder->layout()->takeAt(0)) != nullptr) {
+            delete item->widget();
+            delete item;
+        }
+
+        // Create Chart
+        QBarSet *set0 = new QBarSet("Score");
+        QStringList categories;
+        
+        for (const auto& score : scores) {
+            *set0 << score.totalScore;
+            categories << QString::fromStdString(score.name);
+        }
+
+        // Style the bars (Cyan theme)
+        set0->setColor(QColor(0, 212, 255));
+        set0->setBorderColor(QColor(0, 212, 255));
+        set0->setLabelColor(Qt::white);
+
+        QBarSeries *series = new QBarSeries();
+        series->append(set0);
+        series->setLabelsVisible(true);
+        series->setLabelsPosition(QAbstractBarSeries::LabelsOutsideEnd);
+        series->setLabelsFormat("@value%");
+
+        QChart *chart = new QChart();
+        chart->addSeries(series);
+        chart->setAnimationOptions(QChart::SeriesAnimations);
+        
+        // TRANSPARENCY FIXES
+        chart->setBackgroundBrush(Qt::NoBrush);
+        chart->setBackgroundVisible(false);
+        chart->setPlotAreaBackgroundVisible(false);
+        chart->legend()->setVisible(false);
+        chart->setMargins(QMargins(0, 0, 0, 0));
+
+        // X Axis
+        QBarCategoryAxis *axisX = new QBarCategoryAxis();
+        axisX->append(categories);
+        axisX->setLabelsColor(Qt::white);
+        axisX->setGridLineVisible(false);
+        axisX->setLineVisible(false);
+        QFont fontX = axisX->labelsFont();
+        fontX.setPointSize(10);
+        axisX->setLabelsFont(fontX);
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
+
+        // Y Axis
+        QValueAxis *axisY = new QValueAxis();
+        axisY->setRange(0, 110);
+        axisY->setVisible(false);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+
+        QChartView *chartView = new QChartView(chart);
+        chartView->setRenderHint(QPainter::Antialiasing);
+        
+        // COMPREHENSIVE TRANSPARENCY SETTINGS
+        chartView->setBackgroundBrush(Qt::NoBrush);
+        chartView->setStyleSheet("background: transparent; border: none;");
+        chartView->setFrameShape(QFrame::NoFrame);
+        chartView->setAttribute(Qt::WA_TranslucentBackground);
+        
+        // Ensure parent is also transparent just in case
+        graphPlaceholder->setStyleSheet("background-color: transparent; border: none;");
+
+        graphPlaceholder->layout()->addWidget(chartView);
+    }
+    // ----------------------------------------
+
+    // Update top performer card
+    QLabel* recommendationText = resultsPage->findChild<QLabel*>("recommendationText");
+    QLabel* performanceValue = resultsPage->findChild<QLabel*>("performanceValue");
+    QLabel* warningText = resultsPage->findChild<QLabel*>("warningText");
+
+    const auto& winner = scores[0];
+    recommendationText->setText(QString::fromStdString(winner.name));
+    performanceValue->setText(QString::number(winner.totalScore, 'f', 1) + "%");
+
+    // Set warning based on structure
+    if (winner.name == "HashMap") {
+        warningText->setText("⚠️ Hash collisions may occur with large datasets");
+    } else if (winner.name == "BST") {
+        warningText->setText("⚠️ Performance degrades if tree becomes unbalanced");
+    } else if (winner.name == "Heap") {
+        warningText->setText("⚠️ Not suitable for searching arbitrary elements");
+    } else if (winner.name == "Trie") {
+        warningText->setText("⚠️ Memory intensive for long strings");
+    }
+
+    // Update analysis info
+    QLabel* datasetValue = resultsPage->findChild<QLabel*>("datasetValue");
+    QLabel* sizeValue = resultsPage->findChild<QLabel*>("sizeValue");
+    QLabel* operationsValue = resultsPage->findChild<QLabel*>("operationsValue");
+
+    datasetValue->setText("Generated Test Data");
+    sizeValue->setText(QString::number(profile.dataSize) + " elements");
+
+    // Update operation percentages from sliders
+    QSlider* searchSlider = analysisPage->findChild<QSlider*>("searchSlider");
+    QSlider* insertSlider = analysisPage->findChild<QSlider*>("insertSlider");
+    QSlider* deleteSlider = analysisPage->findChild<QSlider*>("deleteSlider");
+
+    operationsValue->setText(QString("Search %1% | Insert %2% | Delete %3%")
+                                 .arg(searchSlider->value())
+                                 .arg(insertSlider->value())
+                                 .arg(deleteSlider->value()));
+
+    // Update result cards
+    std::vector<QLabel*> scoreLabels = {
+        resultsPage->findChild<QLabel*>("hashScore"),
+        resultsPage->findChild<QLabel*>("bstScore"),
+        resultsPage->findChild<QLabel*>("arrayScore")
+    };
+
+    std::vector<QLabel*> tagLabels = {
+        resultsPage->findChild<QLabel*>("dsTag1"),
+        resultsPage->findChild<QLabel*>("dsTag2"),
+        resultsPage->findChild<QLabel*>("dsTag3")
+    };
+
+    int i = 0;
+    for (const auto& score : scores) {
+        if (i >= 3) break;
+
+        if (i < scoreLabels.size()) {
+            scoreLabels[i]->setText(QString::number(score.totalScore, 'f', 1) + "%");
+        }
+        if (i < tagLabels.size()) {
+            tagLabels[i]->setText(QString::fromStdString(score.name));
+        }
+        i++;
+    }
+}
+
+void MainWindow::onExportResultsClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    "Export Results", "", "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)");
+
+    if (!fileName.isEmpty()) {
+        if (fileName.endsWith(".csv", Qt::CaseInsensitive)) {
+            // Export to CSV
+            std::ofstream file(fileName.toStdString());
+            if (file.is_open()) {
+                file << "Structure,DataSize,InsertTime(ms),SearchTime(ms),DeleteTime(ms),"
+                     << "TotalTime(ms),MemoryUsed(bytes),MemoryPerElement(bytes)\n";
+
+                for (const auto& pair : currentResults) {
+                    file << pair.second.toCSV() << "\n";
+                }
+
+                file.close();
+                QMessageBox::information(this, "Export Successful",
+                                         "Results exported to: " + fileName);
+            }
+        } else {
+            // Export as text report
+            std::ofstream file(fileName.toStdString());
+            if (file.is_open()) {
+                file << "Data Structure Optimizer - Analysis Report\n";
+                file << "==========================================\n\n";
+
+                file << "Data Profile:\n";
+                file << "Size: " << currentProfile.dataSize << " elements\n";
+                file << "Type: " << currentProfile.dataType << "\n";
+                file << "Sorted: " << (currentProfile.isSorted ? "Yes" : "No") << "\n\n";
+
+                file << "Performance Results:\n";
+                for (const auto& pair : currentResults) {
+                    file << pair.second.toString() << "\n";
+                }
+
+                file << "\nRecommendations:\n";
+                file << recommendationEngine->generateRecommendation(currentScores);
+
+                file.close();
+                QMessageBox::information(this, "Export Successful",
+                                         "Report exported to: " + fileName);
+            }
+        }
+    }
+}
+
+void MainWindow::onNewAnalysisFromResults()
+{
+    stack->setCurrentIndex(1);
+}
+
+void MainWindow::onSettingsClicked()
+{
+    QDialog settingsDialog(this);
+    settingsDialog.setWindowTitle("Settings");
+    settingsDialog.setMinimumSize(300, 200);
+    
+    QVBoxLayout *layout = new QVBoxLayout(&settingsDialog);
+    
+    QLabel *title = new QLabel("Data Structure Optimizer", &settingsDialog);
+    title->setStyleSheet("font-size: 18px; font-weight: bold; color: white;");
+    title->setAlignment(Qt::AlignCenter);
+    layout->addWidget(title);
+    
+    QLabel *version = new QLabel("Version 1.0.0", &settingsDialog);
+    version->setStyleSheet("color: #aaa;");
+    version->setAlignment(Qt::AlignCenter);
+    layout->addWidget(version);
+    
+    layout->addSpacing(20);
+    
+    QPushButton *resetBtn = new QPushButton("Reset All Inputs", &settingsDialog);
+    layout->addWidget(resetBtn);
+    
+    connect(resetBtn, &QPushButton::clicked, [this, &settingsDialog]() {
+         // Reset logic if needed, for now just show message
+         QMessageBox::information(&settingsDialog, "Reset", "Inputs have been reset to default.");
+         settingsDialog.accept();
+    });
+    
+    QPushButton *closeBtn = new QPushButton("Close", &settingsDialog);
+    layout->addWidget(closeBtn);
+    connect(closeBtn, &QPushButton::clicked, &settingsDialog, &QDialog::accept);
+    
+    // Theme dialog
+    settingsDialog.setStyleSheet(R"(
+        QDialog { background-color: #353535; color: white; }
+        QLabel { color: white; }
+        QPushButton { background-color: #3d3d3d; border: 1px solid #555; padding: 8px; border-radius: 4px; color: white; }
+        QPushButton:hover { background-color: #4d4d4d; }
+    )");
+    
+    settingsDialog.exec();
+}
+
+void MainWindow::onHelpClicked()
+{
+    // Help functionality
+    QDialog helpDialog(this);
+    helpDialog.setWindowTitle("Help & Documentation");
+    helpDialog.setMinimumSize(600, 400);
+    
+    QVBoxLayout *layout = new QVBoxLayout(&helpDialog);
+    
+    QTextBrowser *browser = new QTextBrowser(&helpDialog);
+    browser->setHtml(R"(
+        <body style="background-color: #353535; color: white; font-family: sans-serif;">
+            <h1 style="color: #00d4ff;">Help & Documentation</h1>
+            <p>Welcome to the Data Structure Optimizer. This tool helps you select the best data structure for your specific needs.</p>
+            
+            <h3 style="color: #4ade80;">1. Dashboard</h3>
+            <p>Start a new analysis or load previous results from the dashboard.</p>
+            
+            <h3 style="color: #4ade80;">2. New Analysis</h3>
+            <p>Configure your dataset parameters:</p>
+            <ul>
+                <li><b>Data Type:</b> Choose between Integer or String data.</li>
+                <li><b>Data Size:</b> Number of elements to test.</li>
+                <li><b>Operation Mix:</b> Adjust sliders for Search, Insert, and Delete ratios.</li>
+                <li><b>Constraints:</b> Check any specific requirements like memory or sorting.</li>
+            </ul>
+            
+            <h3 style="color: #4ade80;">3. Results</h3>
+            <p>View performance metrics and the recommended structure.</p>
+            <ul>
+                <li><b>Performance Graph:</b> Visual comparison of structure scores.</li>
+                <li><b>Detailed Cards:</b> Specific pros/cons for each structure.</li>
+                <li><b>Export:</b> Save your results to CSV or Text report.</li>
+            </ul>
+        </body>
+    )");
+    browser->setStyleSheet("border: none; background-color: #353535;");
+    layout->addWidget(browser);
+    
+    QPushButton *closeBtn = new QPushButton("Close", &helpDialog);
+    layout->addWidget(closeBtn);
+    connect(closeBtn, &QPushButton::clicked, &helpDialog, &QDialog::accept);
+    
+    helpDialog.setStyleSheet(R"(
+        QDialog { background-color: #353535; }
+        QPushButton { background-color: #0d6efd; border: none; padding: 8px; border-radius: 4px; color: white; font-weight: bold;}
+        QPushButton:hover { background-color: #0b5ed7; }
+    )");
+    
+    helpDialog.exec();
+}
