@@ -1,4 +1,4 @@
-# AI-Powered Data Structure Optimizer
+# Data Structure Optimizer
 
 A C++ application with Qt GUI that analyzes datasets and recommends the optimal data structure.
 
