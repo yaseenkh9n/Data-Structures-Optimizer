@@ -26,7 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
     dataAnalyzer(new DataAnalyzer()),
     recommendationEngine(new RecommendationEngine()),
     intBenchmark(new Benchmark<int>()),
-    stringBenchmark(new Benchmark<std::string>())
+    stringBenchmark(new Benchmark<std::string>()),
+    userName("User")
 {
     // Apply Modern Dark Theme
     qApp->setStyle(QStyleFactory::create("Fusion"));
@@ -52,11 +53,23 @@ MainWindow::MainWindow(QWidget *parent)
             background-color: #353535;
         }
         QDialog, QMessageBox {
-            background-color: #353535;
+            background-color: #0d1117;
             color: white;
         }
         QMessageBox QLabel {
+            color: #ffffff;
+            font-size: 14px;
+        }
+        QMessageBox QPushButton {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+            padding: 6px 12px;
+            border-radius: 4px;
             color: white;
+            min-width: 80px;
+        }
+        QMessageBox QPushButton:hover {
+            background-color: #4d4d4d;
         }
         QPushButton {
             background-color: #0d6efd;
@@ -114,27 +127,55 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setMinimumSize(1200, 650);
 
+    // Initialize User Profile
+    ui->userNameLabel->setText(userName);
+    ui->userAvatarLabel->setText(userName.left(1).toUpper());
+
     // STACK
     stack = new QStackedWidget(this);
 
-    // Take existing dashboard layout
+    // Initial pages (Adding directly to stack)
     dashboardPage = new QWidget();
-    dashboardPage->setLayout(ui->contentArea->layout());
+    if (ui->contentArea->layout()) {
+        dashboardPage->setLayout(ui->contentArea->layout());
+        // Zero out the margins of the dashboard layout we just took
+        if (dashboardPage->layout()) {
+            dashboardPage->layout()->setContentsMargins(0, 0, 0, 0);
+        }
+    }
 
     analysisPage = new NewAnalysis(this);
     resultsPage = new Results(this);
+    aboutPage = new QWidget();
+    setupAboutPage();
 
     stack->addWidget(dashboardPage); // 0
     stack->addWidget(analysisPage);  // 1
     stack->addWidget(resultsPage);   // 2
+    stack->addWidget(aboutPage);     // 3
 
-    // Remove old layout safely
+    // Create a SINGLE global glass card wrapping the stack
+    mainGlassPanel = new QFrame(ui->contentArea);
+    mainGlassPanel->setObjectName("mainGlassPanel");
+    mainGlassPanel->setStyleSheet(R"(
+        #mainGlassPanel {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+    )");
+
+    QVBoxLayout *glassLayout = new QVBoxLayout(mainGlassPanel);
+    glassLayout->setContentsMargins(40, 40, 40, 40); // Initial dashboard padding
+    glassLayout->addWidget(stack);
+
+    // Clean up contentArea and add the glass card
     QLayout *oldLayout = ui->contentArea->layout();
     delete oldLayout;
 
-    QVBoxLayout *layout = new QVBoxLayout(ui->contentArea);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(stack);
+    QVBoxLayout *contentLayout = new QVBoxLayout(ui->contentArea);
+    contentLayout->setContentsMargins(15, 15, 15, 15); // Global outer spacing (smaller)
+    contentLayout->addWidget(mainGlassPanel);
 
     stack->setCurrentIndex(0);
 
@@ -158,11 +199,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(resultsPage->findChild<QPushButton*>("newAnalysisButton"), &QPushButton::clicked,
             this, &MainWindow::onNewAnalysisFromResults);
     
-    // Settings Button (Dashboard) - Assuming it's in the main UI file
-    QPushButton* dashboardSettings = this->findChild<QPushButton*>("settingsButton");
-    if (dashboardSettings) {
-        connect(dashboardSettings, &QPushButton::clicked, this, &MainWindow::onSettingsClicked);
-    }
+    // Dashboard settings button
+    connect(ui->settingsButton, &QPushButton::clicked, this, &MainWindow::onSettingsClicked);
 
     // Settings Button (New Analysis) - Assuming it's in the NewAnalysis widget
     // Since NewAnalysis is a custom widget promoted or added, we find it there.
@@ -174,14 +212,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
     
-    // Help Button
-    if (ui->sidebarList->count() < 4) { // Assuming 0:Dash, 1:Analysis, 2:Results
-         QListWidgetItem* helpItem = new QListWidgetItem("Help");
-         helpItem->setIcon(QIcon(":/Icons/help_24dp.svg")); // Use placeholder or valid icon if exists
-         // If icon doesn't exist, it just won't show.
-         helpItem->setTextAlignment(Qt::AlignCenter);
-         ui->sidebarList->addItem(helpItem);
-    }
+
 }
 
 MainWindow::~MainWindow()
@@ -197,11 +228,18 @@ void MainWindow::onSidebarItemClicked(int index)
 {
     if (index >= 0 && index < stack->count()) {
         stack->setCurrentIndex(index);
-    } else if (index == stack->count()) { 
-        // If index is count, it might be our Help item appended at the end
-        // But since we use QDialog for help, we don't switch stack, just show dialog
-        // And reset selection
-        onHelpClicked();
+        
+        // Dynamic padding adjustment
+        if (mainGlassPanel && mainGlassPanel->layout()) {
+            if (index == 0 || index == 3) { // Dashboard or About
+                mainGlassPanel->layout()->setContentsMargins(40, 40, 40, 40);
+            } else if (index == 1) { // Analysis
+                // Shorter bottom padding to increase scroll height as requested
+                mainGlassPanel->layout()->setContentsMargins(20, 20, 20, 10);
+            } else { // Results
+                mainGlassPanel->layout()->setContentsMargins(20, 20, 20, 20);
+            }
+        }
     }
 }
 
@@ -419,12 +457,43 @@ void MainWindow::onStartAnalysisFromNewPage()
     
     // Style the progress dialog
     progress->setStyleSheet(R"(
-        QProgressDialog { background-color: #353535; color: white; }
-        QLabel { color: white; }
-        QPushButton { background-color: #3d3d3d; border: 1px solid #555; padding: 5px 15px; border-radius: 4px; color: white; }
-        QPushButton:hover { background-color: #4d4d4d; }
-        QProgressBar { border: 1px solid #444; border-radius: 4px; text-align: center; color: white; }
-        QProgressBar::chunk { background-color: #0d6efd; }
+        QProgressDialog { 
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #0d1117, stop:1 #151b25);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: #ffffff;
+        }
+        QLabel { 
+            color: #ffffff; 
+            font-size: 15px; 
+            font-weight: 500;
+        }
+        QPushButton { 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: bold;
+        }
+        QPushButton:hover { 
+            background: rgba(239, 68, 68, 0.1); 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+            color: #ef4444; 
+        }
+        QProgressBar { 
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 10px; 
+            text-align: center; 
+            color: white; 
+            height: 20px;
+            font-weight: bold;
+        }
+        QProgressBar::chunk { 
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #00d4ff, stop:1 #0099cc);
+            border-radius: 10px; 
+        }
     )");
     
     progress->show();
@@ -858,9 +927,10 @@ void MainWindow::onSettingsClicked()
 {
     QDialog settingsDialog(this);
     settingsDialog.setWindowTitle("Settings");
-    settingsDialog.setMinimumSize(300, 200);
+    settingsDialog.setMinimumSize(350, 280);
     
     QVBoxLayout *layout = new QVBoxLayout(&settingsDialog);
+    layout->setSpacing(15);
     
     QLabel *title = new QLabel("Data Structure Optimizer", &settingsDialog);
     title->setStyleSheet("font-size: 18px; font-weight: bold; color: white;");
@@ -872,80 +942,210 @@ void MainWindow::onSettingsClicked()
     version->setAlignment(Qt::AlignCenter);
     layout->addWidget(version);
     
-    layout->addSpacing(20);
+    layout->addSpacing(10);
     
-    QPushButton *resetBtn = new QPushButton("Reset All Inputs", &settingsDialog);
+    // User Name Section
+    QLabel *userLabel = new QLabel("Your Name:", &settingsDialog);
+    userLabel->setStyleSheet("color: white; font-size: 14px;");
+    layout->addWidget(userLabel);
+    
+    QLineEdit *nameInput = new QLineEdit(&settingsDialog);
+    nameInput->setPlaceholderText("Enter your name...");
+    nameInput->setText(userName);
+    nameInput->setStyleSheet(R"(
+        QLineEdit {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 10px;
+            color: white;
+            font-size: 14px;
+        }
+        QLineEdit:focus {
+            border: 1px solid #00d4ff;
+        }
+    )");
+    layout->addWidget(nameInput);
+    
+    layout->addSpacing(10);
+    
+    QPushButton *saveBtn = new QPushButton("Save Profile", &settingsDialog);
+    saveBtn->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #00d4ff, stop:1 #0099cc);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #33dfff, stop:1 #00b8e6);
+        }
+    )");
+    layout->addWidget(saveBtn);
+    
+    // Middle Spacer
+    layout->addSpacing(10);
+    QFrame* line = new QFrame(&settingsDialog);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setStyleSheet("background-color: rgba(255, 255, 255, 0.1);");
+    layout->addWidget(line);
+    layout->addSpacing(10);
+
+    QPushButton *resetBtn = new QPushButton("Reset Application Data", &settingsDialog);
+    resetBtn->setStyleSheet(R"(
+        QPushButton {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 8px;
+            border-radius: 6px;
+        }
+        QPushButton:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+    )");
     layout->addWidget(resetBtn);
     
     connect(resetBtn, &QPushButton::clicked, [this, &settingsDialog]() {
-         // Reset logic if needed, for now just show message
-         QMessageBox::information(&settingsDialog, "Reset", "Inputs have been reset to default.");
-         settingsDialog.accept();
+         QMessageBox msgBox(&settingsDialog);
+         msgBox.setWindowTitle("Confirm Reset");
+         msgBox.setText("Are you sure you want to reset all data?");
+         msgBox.setInformativeText("This will clear recent datasets and results.");
+         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+         msgBox.setDefaultButton(QMessageBox::No);
+         msgBox.setStyleSheet("QLabel{ color: white; }");
+         
+         if (msgBox.exec() == QMessageBox::Yes) {
+             recentDatasets.clear();
+             currentResults.clear();
+             currentScores.clear();
+             updateDashboard();
+             settingsDialog.accept();
+         }
     });
+
+    layout->addSpacing(10);
     
     QPushButton *closeBtn = new QPushButton("Close", &settingsDialog);
+    closeBtn->setStyleSheet(R"(
+        QPushButton {
+            background-color: transparent;
+            border: none;
+            padding: 8px;
+            color: #888;
+        }
+        QPushButton:hover {
+            color: white;
+        }
+    )");
     layout->addWidget(closeBtn);
-    connect(closeBtn, &QPushButton::clicked, &settingsDialog, &QDialog::accept);
+    
+    connect(saveBtn, &QPushButton::clicked, [this, nameInput, &settingsDialog]() {
+        userName = nameInput->text().trimmed();
+        if (userName.isEmpty()) {
+            userName = "User";
+        }
+        
+        // Update the sidebar user profile
+        if (ui->userNameLabel) ui->userNameLabel->setText(userName);
+        if (ui->userAvatarLabel) ui->userAvatarLabel->setText(userName.left(1).toUpper());
+        
+        settingsDialog.accept();
+    });
+    
+    connect(closeBtn, &QPushButton::clicked, &settingsDialog, &QDialog::reject);
     
     // Theme dialog
     settingsDialog.setStyleSheet(R"(
-        QDialog { background-color: #353535; color: white; }
+        QDialog { background-color: #1a1e26; color: white; }
         QLabel { color: white; }
-        QPushButton { background-color: #3d3d3d; border: 1px solid #555; padding: 8px; border-radius: 4px; color: white; }
-        QPushButton:hover { background-color: #4d4d4d; }
     )");
     
     settingsDialog.exec();
 }
 
-void MainWindow::onHelpClicked()
+void MainWindow::onAboutClicked()
 {
-    // Help functionality
-    QDialog helpDialog(this);
-    helpDialog.setWindowTitle("Help & Documentation");
-    helpDialog.setMinimumSize(600, 400);
-    
-    QVBoxLayout *layout = new QVBoxLayout(&helpDialog);
-    
-    QTextBrowser *browser = new QTextBrowser(&helpDialog);
-    browser->setHtml(R"(
-        <body style="background-color: #353535; color: white; font-family: sans-serif;">
-            <h1 style="color: #00d4ff;">Help & Documentation</h1>
-            <p>Welcome to the Data Structure Optimizer. This tool helps you select the best data structure for your specific needs.</p>
-            
-            <h3 style="color: #4ade80;">1. Dashboard</h3>
-            <p>Start a new analysis or load previous results from the dashboard.</p>
-            
-            <h3 style="color: #4ade80;">2. New Analysis</h3>
-            <p>Configure your dataset parameters:</p>
-            <ul>
-                <li><b>Data Type:</b> Choose between Integer or String data.</li>
-                <li><b>Data Size:</b> Number of elements to test.</li>
-                <li><b>Operation Mix:</b> Adjust sliders for Search, Insert, and Delete ratios.</li>
-                <li><b>Constraints:</b> Check any specific requirements like memory or sorting.</li>
-            </ul>
-            
-            <h3 style="color: #4ade80;">3. Results</h3>
-            <p>View performance metrics and the recommended structure.</p>
-            <ul>
-                <li><b>Performance Graph:</b> Visual comparison of structure scores.</li>
-                <li><b>Detailed Cards:</b> Specific pros/cons for each structure.</li>
-                <li><b>Export:</b> Save your results to CSV or Text report.</li>
-            </ul>
-        </body>
-    )");
-    browser->setStyleSheet("border: none; background-color: #353535;");
-    layout->addWidget(browser);
-    
-    QPushButton *closeBtn = new QPushButton("Close", &helpDialog);
-    layout->addWidget(closeBtn);
-    connect(closeBtn, &QPushButton::clicked, &helpDialog, &QDialog::accept);
-    
-    helpDialog.setStyleSheet(R"(
-        QDialog { background-color: #353535; }
-        QPushButton { background-color: #0d6efd; border: none; padding: 8px; border-radius: 4px; color: white; font-weight: bold;}
-        QPushButton:hover { background-color: #0b5ed7; }
-    )");
-    
-    helpDialog.exec();
+    stack->setCurrentIndex(3);
+}
+
+void MainWindow::setupAboutPage() {
+    QVBoxLayout *mainLayout = new QVBoxLayout(aboutPage);
+    mainLayout->setContentsMargins(40, 40, 40, 40);
+    mainLayout->setSpacing(25);
+
+    // Title
+    QLabel *title = new QLabel("About DSA Optimizer", aboutPage);
+    title->setStyleSheet("color: #00d4ff; font-size: 32px; font-weight: bold;");
+    mainLayout->addWidget(title);
+
+    // Subtitle/Info
+    QLabel *version = new QLabel("Version 1.0.0 | Release Candidate", aboutPage);
+    version->setStyleSheet("color: rgba(160, 180, 210, 0.7); font-size: 15px;");
+    mainLayout->addWidget(version);
+
+    // Horizontal Line
+    QFrame *line = new QFrame(aboutPage);
+    line->setFrameShape(QFrame::HLine);
+    line->setStyleSheet("background: rgba(255, 255, 255, 0.1); max-height: 1px;");
+    mainLayout->addWidget(line);
+
+    // Description
+    QLabel *desc = new QLabel(aboutPage);
+    desc->setText("Welcome to the <b>Data Structure Optimizer</b>, a premium analytical tool designed to simplify complex algorithmic decisions. "
+                  "Our mission is to provide developers and computer scientists with real-time performance insights through intelligent benchmarking "
+                  "and advanced recommendation engines.\n\n"
+                  "Built with C++ and Qt, this application utilizes modern glassmorphism aesthetics to deliver a state-of-the-art user experience "
+                  "without compromising on technical depth.");
+    desc->setWordWrap(true);
+    desc->setStyleSheet("color: #eee; font-size: 16px; line-height: 1.6;");
+    mainLayout->addWidget(desc);
+
+    // Features Section Header
+    QLabel *featuresHeader = new QLabel("Core Capabilities", aboutPage);
+    featuresHeader->setStyleSheet("color: #4ade80; font-size: 20px; font-weight: 600; margin-top: 15px; background: transparent;");
+    mainLayout->addWidget(featuresHeader);
+
+    // Two-Column Features Layout - Fixed Clipping
+    QGridLayout *featuresGrid = new QGridLayout();
+    featuresGrid->setHorizontalSpacing(40);
+    featuresGrid->setVerticalSpacing(30);
+
+    auto addFeature = [&](int row, int col, const QString& title, const QString& text) {
+        QWidget *featWidget = new QWidget(aboutPage);
+        QVBoxLayout *featLayout = new QVBoxLayout(featWidget);
+        featLayout->setContentsMargins(0, 0, 0, 0);
+        featLayout->setSpacing(8);
+
+        QLabel *titleLabel = new QLabel("• " + title, featWidget);
+        titleLabel->setStyleSheet("color: #00d4ff; font-size: 17px; font-weight: bold; background: transparent;");
+        
+        QLabel *contentLabel = new QLabel(text, featWidget);
+        contentLabel->setStyleSheet("color: rgba(220, 230, 245, 0.8); font-size: 14px; background: transparent;");
+        contentLabel->setWordWrap(true);
+        
+        featLayout->addWidget(titleLabel);
+        featLayout->addWidget(contentLabel);
+        featuresGrid->addWidget(featWidget, row, col);
+    };
+
+    addFeature(0, 0, "Deep Analysis", "Automated profiling of dataset characteristics.");
+    addFeature(0, 1, "Live Benchmarking", "Comparative performance testing of BST, Hash, Trie, and Heaps.");
+    addFeature(1, 0, "Smart Decisions", "Multi-criteria reasoning for optimal DS selection.");
+    addFeature(1, 1, "Modern UI", "60FPS fluid glassmorphism animations.");
+
+    mainLayout->addLayout(featuresGrid);
+
+    mainLayout->addStretch();
+
+    // Footer
+    QLabel *footer = new QLabel("Developed by <b>Data Structure group 9</b><br>(M Yasin khan, Rana Abdullah, Anas Mehboob)", aboutPage);
+    footer->setAlignment(Qt::AlignCenter);
+    footer->setStyleSheet("color: rgba(160, 180, 210, 0.6); font-size: 14px; margin-top: 30px; background: transparent;");
+    mainLayout->addWidget(footer);
 }

@@ -46,7 +46,7 @@ QGroupBox {
     background-color: #1f2333;
     border: 1px solid #2a2d3e;
     border-radius: 12px;
-    padding: 20px;
+    padding: 12px;
     margin-top: 15px;
     color: #ffffff;
     font-size: 14px;
@@ -78,10 +78,10 @@ QComboBox {
     background-color: #2a2d3e;
     border: 1px solid #353847;
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     color: #ffffff;
     selection-background-color: #00d4ff;
-    min-height: 40px;
+    min-height: 32px;
     font-size: 14px;
 }
 
@@ -113,9 +113,9 @@ QSpinBox {
     background-color: #2a2d3e;
     border: 1px solid #353847;
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     color: #ffffff;
-    min-height: 40px;
+    min-height: 32px;
     font-size: 14px;
 }
 
@@ -190,7 +190,7 @@ QPushButton#uploadFileButton {
     background-color: #2a2d3e;
     color: #ffffff;
     border: 1px solid #353847;
-    min-height: 40px;
+    min-height: 32px;
 }
 
 QPushButton#uploadFileButton:hover {
@@ -324,9 +324,41 @@ QGridLayout {
          <number>30</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <layout class="QHBoxLayout" name="headerLayout">
           <item>
-           <spacer name="horizontalSpacer">
+           <layout class="QVBoxLayout" name="titleLayout">
+            <property name="spacing">
+             <number>5</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="pageTitle">
+              <property name="font">
+               <font>
+                <pointsize>-1</pointsize>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Create New Analysis</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="pageSubtitle">
+              <property name="font">
+               <font>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Configure your data structure analysis parameters</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="headerSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
@@ -349,38 +381,13 @@ QGridLayout {
             </property>
             <property name="iconSize">
              <size>
-              <width>30</width>
-              <height>30</height>
+              <width>32</width>
+              <height>32</height>
              </size>
             </property>
            </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QLabel" name="pageTitle">
-          <property name="font">
-           <font>
-            <pointsize>-1</pointsize>
-            <bold>true</bold>
-           </font>
-          </property>
-          <property name="text">
-           <string>Create New Analysis</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="pageSubtitle">
-          <property name="font">
-           <font>
-            <pointsize>-1</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Configure your data structure analysis parameters</string>
-          </property>
-         </widget>
         </item>
         <item>
          <spacer name="verticalSpacer_3">
@@ -423,7 +430,7 @@ QGridLayout {
            </property>
            <layout class="QVBoxLayout" name="scrollLayout">
             <property name="spacing">
-             <number>25</number>
+             <number>15</number>
             </property>
             <property name="leftMargin">
              <number>0</number>
@@ -444,7 +451,7 @@ QGridLayout {
               </property>
               <layout class="QVBoxLayout" name="dataConfigLayout">
                <property name="spacing">
-                <number>15</number>
+                <number>8</number>
                </property>
                <item>
                 <layout class="QGridLayout" name="dataGridLayout">
@@ -452,7 +459,7 @@ QGridLayout {
                   <number>20</number>
                  </property>
                  <property name="verticalSpacing">
-                  <number>15</number>
+                  <number>8</number>
                  </property>
                  <item row="0" column="0">
                   <widget class="QLabel" name="dataSourceLabel">
@@ -901,6 +908,7 @@ QGridLayout {
           </widget>
          </widget>
         </item>
+
         <item>
          <spacer name="verticalSpacer_4">
           <property name="orientation">

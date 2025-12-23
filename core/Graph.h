@@ -205,24 +205,7 @@ public:
     }
     
     // Print the adjacency list representation
-    void print() const {
-        cout << "\nGraph Adjacency List:" << endl;
-        cout << "=====================" << endl;
-        
-        for (const auto& pair : adjacencyList) {
-            cout << pair.first << " -> ";
-            bool first = true;
-            for (const Edge& e : pair.second) {
-                if (!first) cout << ", ";
-                cout << e.destination;
-                if (e.weight != 1.0) {
-                    cout << "(" << e.weight << ")";
-                }
-                first = false;
-            }
-            cout << endl;
-        }
-    }
+
 };
 
 #endif // GRAPH_H

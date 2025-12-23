@@ -82,7 +82,7 @@ private:
 
         delete[] oldBuckets;  // Free old bucket array
 
-        std::cout << "[INFO] Rehashed: new capacity = " << capacity << std::endl;
+
     }
 
 public:
@@ -272,43 +272,7 @@ public:
     }
 
 
-    void printStats() const {
-        std::cout << "\n┌─────────────────────────────────────┐" << std::endl;
-        std::cout << "│     HashMap Statistics              │" << std::endl;
-        std::cout << "├─────────────────────────────────────┤" << std::endl;
-        std::cout << "│ Size:          " << size << " elements" << std::endl;
-        std::cout << "│ Capacity:      " << capacity << " buckets" << std::endl;
-        std::cout << "│ Load Factor:   " << getLoadFactor() << std::endl;
-        std::cout << "│ Memory Usage:  " << getMemoryUsage() << " bytes" << std::endl;
 
-        // Calculate collision statistics
-        int usedBuckets = 0;
-        int maxChainLength = 0;
-        int totalChainLength = 0;
-
-        for (int i = 0; i < capacity; i++) {
-            if (buckets[i] != nullptr) {
-                usedBuckets++;
-                int chainLength = 0;
-                Node* current = buckets[i];
-                while (current != nullptr) {
-                    chainLength++;
-                    current = current->next;
-                }
-                totalChainLength += chainLength;
-                maxChainLength = std::max(maxChainLength, chainLength);
-            }
-        }
-
-        double avgChainLength = usedBuckets > 0 ?
-                                    static_cast<double>(totalChainLength) / usedBuckets : 0.0;
-
-        std::cout << "│ Used Buckets:  " << usedBuckets
-                  << " (" << (100.0 * usedBuckets / capacity) << "%)" << std::endl;
-        std::cout << "│ Max Chain:     " << maxChainLength << std::endl;
-        std::cout << "│ Avg Chain:     " << avgChainLength << std::endl;
-        std::cout << "└─────────────────────────────────────┘" << std::endl;
-    }
 
     /**
      * @brief Get all keys in the map

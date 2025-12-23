@@ -88,14 +88,7 @@ public:
     }
 
     // print all elements
-    void print() const {
-        QNode<T>* temp = frontPtr;
-        while (temp) {
-            cout << temp->data << " ";
-            temp = temp->next;
-        }
-        cout << endl;
-    }
+
 };
 
 #endif

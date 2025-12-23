@@ -67,33 +67,7 @@ public:
     }
 
     // print report to console
-    void print() const {
-        cout << "\n" << structureName << " Performance Report:\n";
-        cout << "Dataset: " << dataSize << " elements\n";
-        cout << "Total Time: " << totalTime << " ms\n";
-        cout << "Memory: " << memoryUsed << " bytes ("
-             << (memoryUsed / 1024.0) << " KB)\n";
 
-        if (insertCount > 0) {
-            cout << "\nInsert: " << insertCount << " ops, "
-                 << insertTime << " ms ("
-                 << getAverageInsertTime() << " ms/op)\n";
-        }
-
-        if (searchCount > 0) {
-            cout << "Search: " << searchCount << " ops, "
-                 << searchTime << " ms ("
-                 << getAverageSearchTime() << " ms/op)\n";
-        }
-
-        if (deleteCount > 0) {
-            cout << "Delete: " << deleteCount << " ops, "
-                 << deleteTime << " ms ("
-                 << getAverageDeleteTime() << " ms/op)\n";
-        }
-
-        cout << "Memory/element: " << getMemoryPerElement() << " bytes\n";
-    }
 
     // convert to string for GUI display
     string toString() const {

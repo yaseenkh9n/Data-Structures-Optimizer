@@ -77,7 +77,7 @@ private slots:
     void onExportResultsClicked();
     void onNewAnalysisFromResults();
     void onSettingsClicked();
-    void onHelpClicked();
+    void onAboutClicked();
 
 private:
     // Analysis Input Structure
@@ -103,6 +103,7 @@ private:
     void updateDashboard();
     std::vector<int> generateTestData(int size);
     std::vector<std::string> generateTestStrings(int size);
+    void setupAboutPage();
 
 private:
     Ui::MainWindow *ui;
@@ -111,6 +112,8 @@ private:
     QWidget *dashboardPage;
     NewAnalysis *analysisPage;
     Results *resultsPage;
+    QWidget *aboutPage;
+    QFrame *mainGlassPanel;
 
     // Backend components
     DataAnalyzer *dataAnalyzer;
@@ -123,6 +126,9 @@ private:
     DataAnalyzer::DataProfile currentProfile;
     std::vector<RecommendationEngine::StructureScore> currentScores;
     std::deque<std::string> recentDatasets;
+    
+    // User profile
+    QString userName;
 };
 
 #endif // MAINWINDOW_H

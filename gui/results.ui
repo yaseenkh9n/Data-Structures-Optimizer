@@ -564,7 +564,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>200</height>
+              <height>300</height>
              </size>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -637,6 +637,12 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
             </property>
             <item row="0" column="0">
              <widget class="QFrame" name="resultCard">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>200</height>
+               </size>
+              </property>
               <layout class="QVBoxLayout" name="verticalLayout_8">
                <item>
                 <widget class="QLabel" name="dsTag1">
@@ -705,6 +711,12 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
             </item>
             <item row="0" column="1">
              <widget class="QFrame" name="resultCard_2">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>200</height>
+               </size>
+              </property>
               <layout class="QVBoxLayout" name="verticalLayout_9">
                <item>
                 <widget class="QLabel" name="dsTag2">
@@ -773,6 +785,12 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
             </item>
             <item row="0" column="2">
              <widget class="QFrame" name="resultCard_3">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>200</height>
+               </size>
+              </property>
               <layout class="QVBoxLayout" name="verticalLayout_10">
                <item>
                 <widget class="QLabel" name="dsTag3">

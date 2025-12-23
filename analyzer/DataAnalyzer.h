@@ -120,21 +120,7 @@ public:
     }
 
     // ================= PRINT =================
-    void printProfile(const DataProfile& profile) {
-        std::cout << "\n=== Data Profile ===\n";
-        std::cout << "Size: " << profile.dataSize << "\n";
-        std::cout << "Type: " << profile.dataType << "\n";
-        std::cout << "Sorted: " << (profile.isSorted ? "Yes" : "No") << "\n";
-        std::cout << "Has Pattern: " << (profile.hasPattern ? "Yes" : "No") << "\n";
-        std::cout << "Unique Elements: " << profile.uniqueElements << "\n";
-        std::cout << "Has Duplicates: " << (profile.hasDuplicates ? "Yes" : "No") << "\n";
 
-        if (profile.dataType != "string") {
-            std::cout << "Average Value: " << profile.averageValue << "\n";
-        } else {
-            std::cout << "Avg String Length: " << profile.averageStringLength << "\n";
-        }
-    }
 
     // ================= TO STRING =================
     std::string profileToString(const DataProfile& profile) {

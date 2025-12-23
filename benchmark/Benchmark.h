@@ -46,13 +46,7 @@ public:
         int getInsertCount() const { return (totalOperations * insertPercent) / 100; }
         int getDeleteCount() const { return (totalOperations * deletePercent) / 100; }
 
-        void print() const {
-            cout << "\nOperation Profile:\n";
-            cout << "  Search: " << searchPercent << "% (" << getSearchCount() << " ops)\n";
-            cout << "  Insert: " << insertPercent << "% (" << getInsertCount() << " ops)\n";
-            cout << "  Delete: " << deletePercent << "% (" << getDeleteCount() << " ops)\n";
-            cout << "  Total: " << totalOperations << " operations\n";
-        }
+
 
         string toString() const {
             string result = "\nOperation Profile:\n";
@@ -130,8 +124,6 @@ public:
     void updateProgress(int pct, const string& msg) {
         if (progressCallback) {
             progressCallback(pct, msg);
-        } else {
-            cout << "[" << pct << "%] " << msg << endl;
         }
     }
 
@@ -411,10 +403,7 @@ public:
         map<string, PerformanceMetrics> results;
 
         updateProgress(0, "Starting benchmark suite");
-        cout << "\nBenchmark Suite\n";
-        cout << "Dataset: " << dataset.size() << " elements\n";
-        profile.print();
-
+        
         try {
             updateProgress(10, "Testing BST");
             results["BST"] = testBST(dataset, profile);
@@ -464,49 +453,7 @@ public:
         }
 
         file.close();
-        cout << "Results saved to " << filename << endl;
         return true;
-    }
-
-    // generate comparison report
-    void generateReport(const map<string, PerformanceMetrics>& results) {
-        cout << "\nPerformance Comparison:\n";
-
-        for (const auto& pair : results) {
-            pair.second.print();
-        }
-
-        // find winners
-        string fastInsert, fastSearch, fastDelete, lowMemory;
-        double minInsert = numeric_limits<double>::max();
-        double minSearch = numeric_limits<double>::max();
-        double minDelete = numeric_limits<double>::max();
-        size_t minMemory = numeric_limits<size_t>::max();
-
-        for (const auto& pair : results) {
-            if (pair.second.insertTime > 0 && pair.second.insertTime < minInsert) {
-                minInsert = pair.second.insertTime;
-                fastInsert = pair.first;
-            }
-            if (pair.second.searchTime > 0 && pair.second.searchTime < minSearch) {
-                minSearch = pair.second.searchTime;
-                fastSearch = pair.first;
-            }
-            if (pair.second.deleteTime > 0 && pair.second.deleteTime < minDelete) {
-                minDelete = pair.second.deleteTime;
-                fastDelete = pair.first;
-            }
-            if (pair.second.memoryUsed > 0 && pair.second.memoryUsed < minMemory) {
-                minMemory = pair.second.memoryUsed;
-                lowMemory = pair.first;
-            }
-        }
-
-        cout << "\nWinners:\n";
-        cout << "  Fastest Insert: " << fastInsert << " (" << minInsert << " ms)\n";
-        cout << "  Fastest Search: " << fastSearch << " (" << minSearch << " ms)\n";
-        cout << "  Fastest Delete: " << fastDelete << " (" << minDelete << " ms)\n";
-        cout << "  Least Memory: " << lowMemory << " (" << minMemory << " bytes)\n";
     }
 
     // generate report as string (for GUI)
@@ -595,12 +542,7 @@ public:
         int getInsertCount() const { return (totalOperations * insertPercent) / 100; }
         int getDeleteCount() const { return (totalOperations * deletePercent) / 100; }
 
-        void print() const {
-            cout << "\nOperation Profile:\n";
-            cout << "  Search: " << searchPercent << "% (" << getSearchCount() << " ops)\n";
-            cout << "  Insert: " << insertPercent << "% (" << getInsertCount() << " ops)\n";
-            cout << "  Delete: " << deletePercent << "% (" << getDeleteCount() << " ops)\n";
-        }
+
 
         string toString() const {
             return "\nOperation Profile:\n  Search: " + to_string(searchPercent) + "% (" +
@@ -644,7 +586,6 @@ public:
 
     void updateProgress(int pct, const string& msg) {
         if (progressCallback) progressCallback(pct, msg);
-        else cout << "[" << pct << "%] " << msg << endl;
     }
 
     // BST, Heap, HashMap tests - same structure as template version
@@ -876,10 +817,6 @@ public:
     map<string, PerformanceMetrics> runAllTests(const vector<string>& data, const OperationProfile& prof) {
         map<string, PerformanceMetrics> results;
 
-        cout << "\nBenchmark Suite (String Data)" << endl;
-        cout << "Dataset: " << data.size() << " elements\n";
-        prof.print();
-
         try { results["BST"] = testBST(data, prof); }
         catch (const exception& e) { cerr << "BST failed: " << e.what() << endl; }
 
@@ -907,10 +844,7 @@ public:
         f.close();
         return true;
     }
-    void generateReport(const map<string, PerformanceMetrics>& res) {
-        cout << "\nPerformance Comparison:\n";
-        for (const auto& p : res) p.second.print();
-    }
+
 
     string generateReportString(const map<string, PerformanceMetrics>& res) {
         string r = "\nPerformance Comparison:\n";

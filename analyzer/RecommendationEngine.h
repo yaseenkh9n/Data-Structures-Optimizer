@@ -33,11 +33,7 @@ public:
             }
         }
 
-        void print() const {
-            cout << "Weights: Time=" << timeWeight
-                 << ", Space=" << spaceWeight
-                 << ", Suitability=" << suitabilityWeight << "\n";
-        }
+
     };
 
     // ================= OPERATION PROFILE =================
@@ -63,14 +59,7 @@ public:
             : name(n), totalScore(0.0), timeScore(0.0),
             spaceScore(0.0), suitabilityScore(0.0), reasoning("") {}
 
-        void print() const {
-            cout << "\n=== " << name << " Score ===\n";
-            cout << "Total Score: " << fixed << setprecision(2) << totalScore << "/100\n";
-            cout << "  Time Score: " << timeScore << "/100\n";
-            cout << "  Space Score: " << spaceScore << "/100\n";
-            cout << "  Suitability: " << suitabilityScore << "/100\n";
-            cout << "Reasoning: " << reasoning << "\n";
-        }
+
 
         string toString() const {
             stringstream ss;
