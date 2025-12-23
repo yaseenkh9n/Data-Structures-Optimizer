@@ -20,7 +20,7 @@ cmake --build .
 ```
 
 ## Development Status
-🚧 Week 1: HashMap Implementation - In Progress
+🚧 In Progress
 
 ## Author
 Yaseen Khan
