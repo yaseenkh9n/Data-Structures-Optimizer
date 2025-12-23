@@ -260,6 +260,22 @@ public:
             // memory efficient
             if (profile.memoryConstrained) score += 15;
         }
+        else if (structureName == "Graph") {
+            // Graph is for relationship/network data
+            if (profile.hasRelationships) score += 40;
+
+            // good for connectivity problems
+            if (profile.needsConnectivity) score += 35;
+
+            // flexible for various operations
+            if (opProfile.insertPercent > 30 && opProfile.searchPercent > 30) score += 15;
+
+            // more memory intensive
+            if (profile.memoryConstrained) score -= 15;
+
+            // good for larger datasets with relationships
+            if (profile.dataSize > 100) score += 10;
+        }
 
         // general adjustments
         if (profile.speedCritical && score > 70) score += 5;
@@ -329,6 +345,17 @@ public:
             }
             if (opProfile.searchPercent > 50) {
                 ss << "Not ideal for frequent searches. ";
+            }
+        }
+        else if (structureName == "Graph") {
+            if (profile.hasRelationships) {
+                ss << "Ideal for relationship/network data. ";
+            }
+            if (profile.needsConnectivity) {
+                ss << "Perfect for connectivity and path finding. ";
+            }
+            if (profile.memoryConstrained) {
+                ss << "Consider memory usage for large graphs. ";
             }
         }
 
@@ -408,6 +435,13 @@ public:
             ss << "• O(1) peek at min/max element\n";
             ss << "• Perfect for priority queues\n";
             ss << "• Use when: Need min/max element frequently\n";
+        }
+        else if (winner.name == "Graph") {
+            ss << "Graph provides:\n";
+            ss << "• O(1) to O(V+E) operations depending on query\n";
+            ss << "• Models relationships between entities\n";
+            ss << "• Supports BFS, DFS, shortest path algorithms\n";
+            ss << "• Use when: Data has connections/relationships\n";
         }
 
         return ss.str();

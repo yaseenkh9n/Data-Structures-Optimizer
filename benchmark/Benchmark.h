@@ -6,6 +6,7 @@
 #include "BST.h"
 #include "HashMap.h"
 #include "Trie.h"
+#include "Graph.h"
 #include <vector>
 #include <map>
 #include <chrono>
@@ -331,6 +332,79 @@ public:
         return m;
     }
 
+    // test Graph
+    PerformanceMetrics testGraph(const vector<T>& initialData,
+                                 const OperationProfile& profile) {
+        PerformanceMetrics m("Graph");
+        m.dataSize = initialData.size();
+        Graph<T> graph(false);  // undirected graph
+
+        updateProgress(0, "[Graph] Starting test");
+
+        // phase 1: insert vertices and edges
+        updateProgress(5, "[Graph] Inserting initial data");
+        m.insertTime = measureTime([&]() {
+            // Insert vertices
+            for (const T& val : initialData)
+                graph.insert(val);
+            // Create edges between consecutive elements
+            for (size_t i = 1; i < initialData.size(); i++) {
+                graph.insert(initialData[i-1], initialData[i]);
+            }
+        });
+        m.insertCount = initialData.size();
+
+        // phase 2: search operations (vertex search)
+        int searchCnt = profile.getSearchCount();
+        if (searchCnt > 0) {
+            updateProgress(30, "[Graph] Performing searches");
+            vector<T> searchKeys = generateRandomKeys(initialData, searchCnt);
+            m.searchTime = measureTime([&]() {
+                for (const T& key : searchKeys)
+                    graph.search(key);
+            });
+            m.searchCount = searchCnt;
+        }
+
+        // phase 3: additional inserts (new vertices and edges)
+        int addInserts = profile.getInsertCount();
+        if (addInserts > 0) {
+            updateProgress(60, "[Graph] Additional inserts");
+            vector<T> newVals = generateNewValues(addInserts);
+            double addTime = measureTime([&]() {
+                for (const T& val : newVals)
+                    graph.insert(val);
+            });
+            m.insertTime += addTime;
+            m.insertCount += addInserts;
+        }
+
+        // phase 4: delete operations (vertex removal)
+        int delCnt = profile.getDeleteCount();
+        if (delCnt > 0) {
+            updateProgress(80, "[Graph] Deleting vertices");
+            vector<T> delKeys = generateRandomKeys(initialData, delCnt);
+            m.deleteTime = measureTime([&]() {
+                for (const T& key : delKeys)
+                    graph.remove(key);
+            });
+            m.deleteCount = delCnt;
+        }
+
+        // phase 5: calculate memory
+        int vertices = graph.getVertexCount();
+        int edges = graph.getEdgeCount();
+        // Memory: adjacency list with map overhead + edge vectors
+        m.memoryUsed = vertices * (sizeof(T) + sizeof(vector<void*>)) + 
+                       edges * (sizeof(T) + sizeof(double));
+
+        // phase 6: total time
+        m.totalTime = m.insertTime + m.searchTime + m.deleteTime;
+
+        updateProgress(100, "[Graph] Complete");
+        return m;
+    }
+
     // run all tests
     map<string, PerformanceMetrics> runAllTests(const vector<T>& dataset,
                                                 const OperationProfile& profile) {
@@ -360,6 +434,13 @@ public:
             results["Heap"] = testHeap(dataset, profile);
         } catch (const exception& e) {
             cerr << "Heap failed: " << e.what() << endl;
+        }
+
+        try {
+            updateProgress(85, "Testing Graph");
+            results["Graph"] = testGraph(dataset, profile);
+        } catch (const exception& e) {
+            cerr << "Graph failed: " << e.what() << endl;
         }
 
         updateProgress(100, "All tests complete");
@@ -741,6 +822,57 @@ public:
         return m;
     }
 
+    PerformanceMetrics testGraph(const vector<string>& data, const OperationProfile& prof) {
+        PerformanceMetrics m("Graph");
+        m.dataSize = data.size();
+        Graph<string> graph(false);  // undirected graph
+
+        m.insertTime = measureTime([&]() {
+            // Insert vertices
+            for (const auto& v : data) graph.insert(v);
+            // Create edges between consecutive elements
+            for (size_t i = 1; i < data.size(); i++) {
+                graph.insert(data[i-1], data[i]);
+            }
+        });
+        m.insertCount = data.size();
+
+        int sCnt = prof.getSearchCount();
+        if (sCnt > 0) {
+            auto keys = generateRandomKeys(data, sCnt);
+            m.searchTime = measureTime([&]() {
+                for (const auto& k : keys) graph.search(k);
+            });
+            m.searchCount = sCnt;
+        }
+
+        int iCnt = prof.getInsertCount();
+        if (iCnt > 0) {
+            auto vals = generateNewValues(iCnt);
+            double t = measureTime([&]() {
+                for (const auto& v : vals) graph.insert(v);
+            });
+            m.insertTime += t;
+            m.insertCount += iCnt;
+        }
+
+        int dCnt = prof.getDeleteCount();
+        if (dCnt > 0) {
+            auto keys = generateRandomKeys(data, dCnt);
+            m.deleteTime = measureTime([&]() {
+                for (const auto& k : keys) graph.remove(k);
+            });
+            m.deleteCount = dCnt;
+        }
+
+        int vertices = graph.getVertexCount();
+        int edges = graph.getEdgeCount();
+        m.memoryUsed = vertices * (sizeof(string) + sizeof(vector<void*>)) + 
+                       edges * (sizeof(string) + sizeof(double));
+        m.totalTime = m.insertTime + m.searchTime + m.deleteTime;
+        return m;
+    }
+
     map<string, PerformanceMetrics> runAllTests(const vector<string>& data, const OperationProfile& prof) {
         map<string, PerformanceMetrics> results;
 
@@ -759,6 +891,9 @@ public:
 
         try { results["Trie"] = testTrie(data, prof); }
         catch (const exception& e) { cerr << "Trie failed: " << e.what() << endl; }
+
+        try { results["Graph"] = testGraph(data, prof); }
+        catch (const exception& e) { cerr << "Graph failed: " << e.what() << endl; }
 
         return results;
     }

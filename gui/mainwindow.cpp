@@ -296,9 +296,14 @@ void MainWindow::onLoadResultsClicked()
             }
         }
 
-        file.close();
-        
         updateResultsPage(currentResults, currentProfile, currentScores);
+        
+        // Update recent datasets for loaded file
+        QFileInfo fi(fileName);
+        recentDatasets.push_front(fi.fileName().toStdString());
+        if (recentDatasets.size() > 3) recentDatasets.pop_back();
+        updateDashboard();
+        
         stack->setCurrentIndex(2); // Go to results
         
         QMessageBox::information(this, "Success", "Results loaded successfully.");
@@ -361,6 +366,50 @@ void MainWindow::onStartAnalysisFromNewPage()
     inputs.needsPriorityQueue = priorityCheck ? priorityCheck->isChecked() : false;
     inputs.isSorted = sortedCheck ? sortedCheck->isChecked() : false;
 
+    // ===================== INPUT VALIDATION =====================
+    QStringList errors;
+    
+    // 1. Validate Data Size
+    if (inputs.dataSize <= 0) {
+        errors << "• Data size must be greater than 0.";
+    } else if (inputs.dataSize > 10000000) {
+        errors << "• Data size is too large (max: 10,000,000).";
+    }
+    
+    // 2. Validate Operation Percentages
+    int totalPercent = inputs.searchPercent + inputs.insertPercent + inputs.deletePercent;
+    if (totalPercent != 100) {
+        errors << QString("• Operation percentages must add up to 100%% (currently %1%%).").arg(totalPercent);
+    }
+    
+    // 3. Validate individual percentages
+    if (inputs.searchPercent < 0 || inputs.insertPercent < 0 || inputs.deletePercent < 0) {
+        errors << "• Operation percentages cannot be negative.";
+    }
+    
+    // 4. Validate Data Type selection
+    if (inputs.dataType.empty()) {
+        errors << "• Please select a data type.";
+    }
+    
+    // Show errors if any
+    if (!errors.isEmpty()) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Invalid Input");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("Please fix the following errors before starting analysis:");
+        msgBox.setInformativeText(errors.join("\n"));
+        msgBox.setStyleSheet(R"(
+            QMessageBox { background-color: #353535; }
+            QMessageBox QLabel { color: white; }
+            QPushButton { background-color: #0d6efd; border: none; padding: 8px 16px; border-radius: 4px; color: white; }
+            QPushButton:hover { background-color: #0b5ed7; }
+        )");
+        msgBox.exec();
+        return;
+    }
+    // ===================== END VALIDATION =====================
+
     // Create progress dialog
     // NOTE: ProgressDialog is tricky with threads. We'll use a modal dialog that we close when done.
     QProgressDialog* progress = new QProgressDialog("Running Analysis...", "Cancel", 0, 0, this);
@@ -386,14 +435,70 @@ void MainWindow::onStartAnalysisFromNewPage()
         runAnalysis(inputs);
         
         // Clean up UI on main thread
-        QMetaObject::invokeMethod(this, [progress, this]() {
+        // Clean up UI on main thread
+        QMetaObject::invokeMethod(this, [progress, this, inputs]() {
             progress->close();
             progress->deleteLater();
+            
+            // Add to recent datasets
+            if (!inputs.datasetPath.empty()) {
+                 QFileInfo fi(QString::fromStdString(inputs.datasetPath));
+                 recentDatasets.push_front(fi.fileName().toStdString());
+            } else {
+                 recentDatasets.push_front("Generated Data (" + inputs.dataType + ")");
+            }
+            if (recentDatasets.size() > 3) recentDatasets.pop_back();
+
+            updateResultsPage(currentResults, currentProfile, currentScores);
+            updateDashboard(); // Update dashboard with new data
             stack->setCurrentIndex(2); // Switch to results page
         }, Qt::QueuedConnection);
     });
 
     analysisThread.detach(); // Detach since we handle cleanup via invokeMethod
+}
+
+void MainWindow::updateDashboard()
+{
+    // 1. Last Run Summary
+    QLabel* lastRunValues = dashboardPage->findChild<QLabel*>("cardText");
+    QLabel* bestStructureTitle = dashboardPage->findChild<QLabel*>("cardTitle_2");
+    
+    if (lastRunValues) {
+        if (!recentDatasets.empty()) {
+            lastRunValues->setText(QString::fromStdString(recentDatasets.front()));
+        } else {
+            lastRunValues->setText("No Analysis Run");
+        }
+    }
+    
+    if (bestStructureTitle) {
+        if (!currentScores.empty()) {
+            bestStructureTitle->setText(QString::fromStdString(currentScores[0].name));
+        } else {
+            bestStructureTitle->setText("-");
+        }
+    }
+    
+    // 2. Top Performing Structure
+    QLabel* topScoreLabel = dashboardPage->findChild<QLabel*>("highlightText");
+    QLabel* topMetricLabel = dashboardPage->findChild<QLabel*>("cardText_3");
+    
+    if (topScoreLabel && !currentScores.empty()) {
+        topScoreLabel->setText(QString::number(currentScores[0].totalScore, 'f', 0) + "%");
+    } else if (topScoreLabel) {
+        topScoreLabel->setText("-");
+    }
+    if (topMetricLabel) topMetricLabel->setText("Performance Score");
+
+    // 3. Recent Datasets
+    QLabel* recent1 = dashboardPage->findChild<QLabel*>("cardText_4");
+    QLabel* recent2 = dashboardPage->findChild<QLabel*>("cardText_5");
+    QLabel* recent3 = dashboardPage->findChild<QLabel*>("cardText_6");
+    
+    if (recent1) recent1->setText(recentDatasets.size() > 0 ? QString::fromStdString(recentDatasets[0]) : "-");
+    if (recent2) recent2->setText(recentDatasets.size() > 1 ? QString::fromStdString(recentDatasets[1]) : "-");
+    if (recent3) recent3->setText(recentDatasets.size() > 2 ? QString::fromStdString(recentDatasets[2]) : "-");
 }
 
 std::vector<int> MainWindow::generateTestData(int size)

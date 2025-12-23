@@ -14,149 +14,148 @@
    <string>Analysis Results - DSA Optimizer</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* Content Area */
+   <string notr="true">/* Main Widget - Deep Space Gradient (matches dashboard) */
+Results {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #0d1117,
+        stop:0.5 #151b25,
+        stop:1 #0d1117
+    );
+}
+
+/* Content Area */
 #contentArea {
-    background-color: #1a1d2e;
+    background: transparent;
 }
 
 /* Page Title */
 #pageTitle {
     color: #ffffff;
-    font-size: 32px;
-    font-weight: bold;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 #pageSubtitle {
-    color: #8b92a7;
+    color: rgba(160, 180, 210, 0.8);
     font-size: 14px;
 }
 
-/* Group Boxes */
+/* Group Boxes - Frosted Glass */
 QGroupBox {
-    background-color: #1f2333;
-    border: 1px solid #2a2d3e;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 20px;
     margin-top: 15px;
     color: #ffffff;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    padding: 0 10px;
-    background-color: #1f2333;
+    padding: 4px 12px;
+    background: #1f2333;
+    border-radius: 8px;
     color: #ffffff;
     font-size: 14px;
 }
 
 /* Labels */
 QLabel {
-    color: #ffffff;
+    color: rgba(200, 210, 230, 0.9);
 }
 
-QLabel[font-style=&quot;italic&quot;] {
-    color: #8b92a7;
-    font-style: italic;
-}
-
-/* Result Cards */
-QFrame#resultCard {
-    background-color: #1f2333;
-    border: 1px solid #2a2d3e;
-    border-radius: 12px;
+/* Result Cards - Frosted Glass */
+QFrame#resultCard, QFrame#resultCard_2, QFrame#resultCard_3, QFrame#resultCard_4 {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 15px;
 }
 
+/* Top Performer Card - Glowing Glass */
 QFrame#topPerformerCard {
-    background-color: rgba(0, 212, 255, 0.1);
-    border: 2px solid #00d4ff;
-    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 16px;
     padding: 20px;
 }
 
-/* Buttons */
-QPushButton {
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: normal;
-    padding: 12px 24px;
+/* Analysis Info Card */
+QFrame#analysisInfoCard {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
 }
 
+/* New Analysis Button - Glowing Primary */
 QPushButton#newAnalysisButton {
-    background-color: #00d4ff;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #00d4ff,
+        stop:0.5 #00b8e6,
+        stop:1 #0099cc
+    );
     color: #ffffff;
     border: none;
-    font-weight: bold;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
     min-width: 180px;
-    min-height: 45px;
+    min-height: 30px;
 }
 
 QPushButton#newAnalysisButton:hover {
-    background-color: #00b8e6;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #33dfff,
+        stop:0.5 #00c8f5,
+        stop:1 #00a8dd
+    );
 }
 
+/* Export Button - Frosted Glass */
 QPushButton#exportButton {
-    background-color: #2a2d3e;
-    color: #ffffff;
-    border: 1px solid #353847;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(220, 230, 245, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
     min-width: 150px;
-    min-height: 45px;
+    min-height: 30px;
 }
 
 QPushButton#exportButton:hover {
-    background-color: #353847;
-    border-color: #00d4ff;
-}
-
-QPushButton#settingsButton {
-    background-color: transparent;
-    border: none;
-    color: #8b92a7;
-    font-size: 20px;
-}
-
-QPushButton#settingsButton:hover {
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px solid rgba(0, 212, 255, 0.35);
     color: #ffffff;
 }
 
-/* Data Structure Tags */
-QLabel.dsTag {
-    background-color: rgba(0, 212, 255, 0.2);
-    border: 1px solid #00d4ff;
-    border-radius: 16px;
-    padding: 6px 16px;
-    color: #00d4ff;
-    font-size: 13px;
-    font-weight: bold;
+/* Settings Button - Icon Glow */
+QPushButton#settingsButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 6px;
 }
 
-/* Performance Value */
-QLabel.performanceValue {
-    color: #00d4ff;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-/* Recommendation Text */
-QLabel.recommendationText {
-    color: #4ade80;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* Warning Text */
-QLabel.warningText {
-    color: #ff6b6b;
-    font-size: 14px;
+QPushButton#settingsButton:hover {
+    background: rgba(0, 212, 255, 0.12);
 }
 
 /* Graph Placeholder */
 QFrame#graphPlaceholder {
-    background-color: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
 }
 
 /* Scroll Area */
@@ -165,33 +164,34 @@ QScrollArea {
     background-color: transparent;
 }
 
-QScrollArea &gt; QWidget &gt; QWidget {
+QScrollArea > QWidget > QWidget {
     background-color: transparent;
 }
 
+/* Scrollbar - Glass Style */
 QScrollBar:vertical {
-    background-color: #2a2d3e;
-    width: 10px;
-    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.02);
+    width: 8px;
+    border-radius: 4px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #353847;
-    border-radius: 5px;
-    min-height: 20px;
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 4px;
+    min-height: 40px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.5);
 }
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
 }
 
-/* Scroll Area Content */
+/* Scroll Content */
 #scrollContentWidget {
-    background-color: #1a1d2e;
+    background: transparent;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
@@ -589,7 +589,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 <string notr="true">color: #8b92a7; text-align: center; font-size: 14px;</string>
                </property>
                <property name="text">
-                <string>[Performance Graph Placeholder - Implement with PyQtChart or Matplotlib]</string>
+                <string>[Performance Graph Placeholder ]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignmentFlag::AlignCenter</set>

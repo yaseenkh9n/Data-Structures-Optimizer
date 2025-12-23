@@ -15,126 +15,172 @@
   </property>
   <property name="styleSheet">
    <string notr="true">
-/* Main Window - Dark Theme */
+/* ═══════════════════════════════════════════════════════════════
+   DATA STRUCTURE OPTIMIZER - GLASSMORPHISM DASHBOARD
+   Frosted glass effects with cyan/teal glowing accents
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Main Window - Unified Deep Space Background */
 QMainWindow {
-    background-color: #1a1d2e;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #0d1117,
+        stop:0.5 #151b25,
+        stop:1 #0d1117
+    );
 }
 
-/* Sidebar */
+/* Sidebar - Same Background, Subtle Border */
 #sidebar {
-    background-color: #151824;
-    border-right: 1px solid #2a2d3e;
+    background: transparent;
+    border-right: 1px solid rgba(0, 212, 255, 0.15);
 }
 
-/* List Widget Sidebar */
+/* Sidebar List - Interactive Glass Items */
 QListWidget#sidebarList {
-    background-color: #151824;
+    background-color: transparent;
     border: none;
     outline: none;
-    color: #8b92a7;
+    color: rgba(160, 180, 210, 0.85);
     font-size: 14px;
+    font-weight: 500;
+    padding: 10px 5px;
 }
 
 QListWidget#sidebarList::item {
-    padding: 15px 20px;
-    border: none;
-    border-left: 3px solid transparent;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: rgba(160, 180, 210, 0.8);
+    padding: 14px 18px;
+    margin: 3px 8px;
+    height: 22px;
 }
 
 QListWidget#sidebarList::item:hover {
-    background-color: #1f2333;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(0, 212, 255, 0.15),
+        stop:0.8 rgba(0, 212, 255, 0.05),
+        stop:1 transparent
+    );
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-left: 3px solid rgba(0, 212, 255, 0.6);
     color: #ffffff;
 }
 
 QListWidget#sidebarList::item:selected {
-    background-color: #1f2333;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:0,
+        stop:0 rgba(0, 212, 255, 0.25),
+        stop:0.6 rgba(0, 212, 255, 0.1),
+        stop:1 transparent
+    );
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-left: 4px solid #00d4ff;
     color: #00d4ff;
-    border-left: 3px solid #00d4ff;
+    font-weight: 600;
 }
 
-/* Content Area */
+/* Content Area - Transparent */
 #contentArea {
-    background-color: #1a1d2e;
+    background: transparent;
 }
 
 /* Welcome Title */
 #welcomeTitle {
     color: #ffffff;
-    font-size: 36px;
-    font-weight: bold;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 #welcomeSubtitle {
-    color: #8b92a7;
+    color: rgba(160, 180, 210, 0.8);
     font-size: 16px;
 }
 
-/* Primary Button */
+/* Primary Button - Glowing Cyan */
 QPushButton#primaryButton {
-    background-color: #00d4ff;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #00d4ff,
+        stop:0.5 #00b8e6,
+        stop:1 #0099cc
+    );
     color: #ffffff;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 15px 40px;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 QPushButton#primaryButton:hover {
-    background-color: #00b8e6;
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #33dfff,
+        stop:0.5 #00c8f5,
+        stop:1 #00a8dd
+    );
 }
 
-/* Secondary Button */
+QPushButton#primaryButton:pressed {
+    background: qlineargradient(
+        spread:pad, x1:0, y1:0, x2:1, y2:1,
+        stop:0 #00a8dd,
+        stop:1 #0088bb
+    );
+}
+
+/* Secondary Button - Frosted Glass */
 QPushButton#secondaryButton {
-    background-color: #2a2d3e;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(220, 230, 245, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
     padding: 15px 40px;
-    font-size: 16px;
+    font-size: 15px;
+    font-weight: 500;
 }
 
 QPushButton#secondaryButton:hover {
-    background-color: #353847;
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    color: #ffffff;
 }
 
-/* Cards */
-QFrame#card {
-    background-color: #1f2333;
-    border-radius: 12px;
+/* Cards - Frosted Glass Panels */
+QFrame#card, QFrame#card_2, QFrame#card_3 {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     padding: 20px;
 }
 
-QFrame#card_2 {
-    background-color: #1f2333;
-    border-radius: 12px;
-    padding: 20px;
-}
-
-QFrame#card_3 {
-    background-color: #1f2333;
-    border-radius: 12px;
-    padding: 20px;
+QFrame#card:hover, QFrame#card_2:hover, QFrame#card_3:hover {
+    background: rgba(0, 212, 255, 0.06);
+    border: 1px solid rgba(0, 212, 255, 0.25);
 }
 
 /* Card Titles */
 QLabel#cardTitle, QLabel#cardTitle_2, QLabel#cardTitle_3, QLabel#cardTitle_4 {
     color: #ffffff;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: 600;
 }
 
 /* Card Text */
 QLabel#cardText, QLabel#cardText_2, QLabel#cardText_3, QLabel#cardText_4, QLabel#cardText_5, QLabel#cardText_6 {
-    color: #8b92a7;
+    color: rgba(160, 180, 210, 0.75);
     font-size: 14px;
 }
 
-/* Highlight Text */
+/* Highlight Text - Glowing Cyan */
 QLabel#highlightText {
     color: #00d4ff;
-    font-size: 48px;
-    font-weight: bold;
+    font-size: 52px;
+    font-weight: 700;
 }
 
 /* Logo Text */
@@ -144,16 +190,16 @@ QLabel#highlightText {
     font-weight: bold;
 }
 
-/* Settings Button */
+/* Settings Button - Icon Glow */
 QPushButton#settingsButton {
     background-color: transparent;
     border: none;
-    color: #8b92a7;
-    font-size: 20px;
+    border-radius: 10px;
+    padding: 6px;
 }
 
 QPushButton#settingsButton:hover {
-    color: #ffffff;
+    background: rgba(0, 212, 255, 0.12);
 }
    </string>
   </property>

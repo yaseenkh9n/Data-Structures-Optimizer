@@ -28,6 +28,10 @@ public:
         bool needsPriorityQueue;
         bool memoryConstrained;
         bool speedCritical;
+
+        // graph-related flags
+        bool hasRelationships;
+        bool needsConnectivity;
     };
 
     // ================= INTEGER DATA =================
@@ -182,6 +186,8 @@ private:
         profile.needsPriorityQueue = false;
         profile.memoryConstrained = false;
         profile.speedCritical = false;
+        profile.hasRelationships = false;
+        profile.needsConnectivity = false;
     }
 };
 

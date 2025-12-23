@@ -51,6 +51,7 @@ set(HEADERS
     core/Heap.h
     core/Trie.h
     core/Queue.h
+    core/Graph.h
 )
 
 # UI files

@@ -39,6 +39,9 @@
 #include <QStackedWidget>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <vector>
+#include <map>
+#include <deque>
 
 #include "newAnalysis.h"
 #include "results.h"
@@ -49,6 +52,7 @@
 #include "../core/HashMap.h"
 #include "../core/Heap.h"
 #include "../core/Trie.h"
+#include "../core/Graph.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -96,6 +100,7 @@ private:
     void updateResultsPage(const std::map<std::string, PerformanceMetrics>& results,
                            const DataAnalyzer::DataProfile& profile,
                            const std::vector<RecommendationEngine::StructureScore>& scores);
+    void updateDashboard();
     std::vector<int> generateTestData(int size);
     std::vector<std::string> generateTestStrings(int size);
 
@@ -117,6 +122,7 @@ private:
     std::map<std::string, PerformanceMetrics> currentResults;
     DataAnalyzer::DataProfile currentProfile;
     std::vector<RecommendationEngine::StructureScore> currentScores;
+    std::deque<std::string> recentDatasets;
 };
 
 #endif // MAINWINDOW_H
