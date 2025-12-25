@@ -3,7 +3,12 @@
 
 #include <cstddef>
 #include <iostream>
+#include <cstddef>
+#include <iostream>
 #include <string>
+#include <sstream>
+#include <locale>
+#include <iomanip>
 
 using namespace std;
 
@@ -26,6 +31,7 @@ public:
     // metadata
     string structureName;
     int dataSize;
+    double score; // Stored score from recommendation engine
 
     // constructor
     PerformanceMetrics(string name = "Unknown") : structureName(name) {
@@ -33,6 +39,7 @@ public:
         insertCount = searchCount = deleteCount = 0;
         memoryUsed = 0;
         dataSize = 0;
+        score = 0.0;
     }
 
     // calculate average times
@@ -101,14 +108,18 @@ public:
 
     // export to CSV format
     string toCSV() const {
-        return structureName + "," +
-               to_string(dataSize) + "," +
-               to_string(insertTime) + "," +
-               to_string(searchTime) + "," +
-               to_string(deleteTime) + "," +
-               to_string(totalTime) + "," +
-               to_string(memoryUsed) + "," +
-               to_string(getMemoryPerElement());
+        std::stringstream ss;
+        ss.imbue(std::locale::classic()); // Force C locale (dot for decimals)
+        ss << structureName << ","
+           << dataSize << ","
+           << insertTime << ","
+           << searchTime << ","
+           << deleteTime << ","
+           << totalTime << ","
+           << memoryUsed << ","
+           << getMemoryPerElement() << ","
+           << score; // Export Score
+        return ss.str();
     }
 };
 

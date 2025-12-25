@@ -7,6 +7,7 @@
 #include <QProgressDialog>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QComboBox>
 #include <QSlider>
 #include <QCheckBox>
@@ -19,6 +20,9 @@
 #include <iostream>
 #include <QtCharts>
 #include <QTextBrowser>
+#include <QTextBrowser>
+#include <cmath>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -254,69 +258,119 @@ void MainWindow::onLoadResultsClicked()
                                                     "Load Previous Results", "", "CSV Files (*.csv);;All Files (*)");
 
     if (!fileName.isEmpty()) {
-        std::ifstream file(fileName.toStdString());
-        if (!file.is_open()) {
-            QMessageBox::critical(this, "Error", "Could not open file: " + fileName);
+        QFileInfo fileInfo(fileName);
+        if (fileInfo.suffix().toLower() != "csv") {
+            QMessageBox::critical(this, "Invalid File Type", "Please select a .csv file.");
             return;
         }
 
-        std::string line;
+        QFile qFile(fileName);
+        if (qFile.size() == 0) {
+             QMessageBox::critical(this, "Invalid File", "The selected file is empty.");
+             return;
+        }
         
-        // Skip header
-        if (!std::getline(file, line)) {
-            QMessageBox::critical(this, "Error", "File is empty or invalid format.");
-            return;
+        if (!qFile.open(QIODevice::ReadOnly)) {
+             QMessageBox::critical(this, "Error", "Could not open file for reading.");
+             return;
+        }
+        
+        // Binary Check
+        QByteArray chunk = qFile.read(1024);
+        if (chunk.contains('\0')) {
+             QMessageBox::critical(this, "Invalid Content", "The file appears to be binary. Please select a valid CSV results file.");
+             qFile.close();
+             return;
+        }
+        qFile.close();
+
+        // OPEN FILE
+        if (!qFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+             QMessageBox::critical(this, "Error", "Could not open file for reading text.");
+             return;
+        }
+        
+
+        
+        QTextStream in(&qFile);
+        QString line = in.readLine();
+        
+        // Validate Header (Simple check for existence of key columns)
+        if (line.isNull() || (!line.contains("Structure") && !line.contains("DataSize"))) {
+             QMessageBox::warning(this, "Unknown Format", "The CSV header does not match the expected format.\nExpected: Structure,DataSize,InsertTime...");
+             return;
         }
 
         currentResults.clear();
         currentScores.clear();
         
-        // Assuming first line is header: Structure,DataSize,InsertTime(ms),SearchTime(ms),DeleteTime(ms),TotalTime(ms),MemoryUsed(bytes),MemoryPerElement(bytes)
+        int successCount = 0;
+        int failCount = 0;
         
-        bool firstRow = true;
-        while (std::getline(file, line)) {
-            std::stringstream ss(line);
-            std::string segment;
-            std::vector<std::string> parts;
+        qDebug() << "Starting CSV parse. File:" << fileName;
 
-            while(std::getline(ss, segment, ',')) {
-                parts.push_back(segment);
+
+        while (!in.atEnd()) {
+            QString dataLine = in.readLine();
+            if (dataLine.trimmed().isEmpty()) continue;
+
+            QStringList parts = dataLine.split(',');
+            if (parts.size() < 8) {
+                failCount++;
+                continue; 
             }
 
-            if (parts.size() < 8) continue;
+            // Clean parts (trim whitespace)
+            for (auto& part : parts) part = part.trimmed();
 
-            PerformanceMetrics metrics(parts[0]);
-            try {
-                metrics.dataSize = std::stoi(parts[1]);
-                metrics.insertTime = std::stod(parts[2]);
-                metrics.searchTime = std::stod(parts[3]);
-                metrics.deleteTime = std::stod(parts[4]);
-                metrics.totalTime = std::stod(parts[5]);
-                // metrics.memoryUsed = std::stoul(parts[6]); // stoul might overflow if size_t is larger but usually fine.
-                metrics.memoryUsed = static_cast<size_t>(std::stod(parts[6])); // Using stod to be safe if saved as float, though it should be int
-                
-                // We don't have op counts in CSV, so we can't fully reconstruct average times accurately 
-                // without count, but for UI display that only needs totals, this is OK.
+            // Parse using QLocale::C (standard) first, then try System
+            QLocale cLocale = QLocale::c();
+            QLocale sysLocale = QLocale::system();
+            
+            PerformanceMetrics metrics(parts[0].toStdString());
+            bool ok = true;
+            bool totalOk = true;
+
+            // Helper lambda for robust double parsing
+            auto parseDouble = [&](const QString& str) -> double {
+                bool conversionOk = false;
+                double val = cLocale.toDouble(str, &conversionOk);
+                if (!conversionOk) {
+                    val = sysLocale.toDouble(str, &conversionOk);
+                }
+                if (!conversionOk) totalOk = false;
+                return val;
+            };
+
+            metrics.dataSize = parts[1].toInt(&ok); 
+            if (!ok) totalOk = false;
+
+            metrics.insertTime = parseDouble(parts[2]);
+            metrics.searchTime = parseDouble(parts[3]);
+            metrics.deleteTime = parseDouble(parts[4]);
+            metrics.totalTime = parseDouble(parts[5]);
+            metrics.memoryUsed = static_cast<size_t>(parseDouble(parts[6]));
+            
+            if (totalOk) {
+                // If we have a Score column (9th column), read it
+                if (parts.size() >= 9) {
+                    double importedScore = parseDouble(parts[8]);
+                    metrics.score = importedScore;
+                } else {
+                    // Fallback for old files
+                    metrics.score = 1000.0 / (metrics.totalTime + 1.0); 
+                }
                 
                 currentResults[metrics.structureName] = metrics;
-                
-                // Set profile info from first row
-                if (firstRow) {
-                     currentProfile.dataSize = metrics.dataSize;
-                     currentProfile.dataType = "Loaded Data"; // We don't save type in CSV currently
-                     currentProfile.isSorted = false; // Unknown
-                     firstRow = false;
-                }
 
-                // convert to score for recommendation
-                // We'll just generate a dummy score based on total time for now to verify it works
-               RecommendationEngine::StructureScore score;
-               score.name = metrics.structureName;
-               score.totalScore = 1000.0 / (metrics.totalTime + 1.0); // Simple inverse time score
-               currentScores.push_back(score);
-
-            } catch (...) {
-                continue; // Skip malformed lines
+                RecommendationEngine::StructureScore score;
+                score.name = metrics.structureName;
+                score.totalScore = metrics.score; 
+                currentScores.push_back(score);
+                successCount++;
+            } else {
+                qDebug() << "Row failed parsing. Parts:" << parts;
+                failCount++;
             }
         }
         
@@ -325,6 +379,16 @@ void MainWindow::onLoadResultsClicked()
                  [](const RecommendationEngine::StructureScore& a, const RecommendationEngine::StructureScore& b) {
                      return a.totalScore > b.totalScore;
                  });
+                 
+        // VALIDATION: Check if we actually loaded any valid data
+        if (currentResults.empty()) {
+            QString msg = "No valid performance data could be parsed.";
+            if (failCount > 0) {
+                msg += QString("\n\n%1 rows failed numeric parsing. Please check the decimal delimiters (dot vs comma) or file format.").arg(failCount);
+            }
+            QMessageBox::critical(this, "Invalid Data", msg);
+            return;
+        }
 
         // Normalize scores to percentage roughly
         if (!currentScores.empty()) {
@@ -710,6 +774,13 @@ void MainWindow::runAnalysis(AnalysisInputs inputs)
 
     currentScores = recommendationEngine->rankStructures(currentResults, currentProfile,
                                                          recOpProfile, weights);
+    
+    // PERSIST SCORES: Save calculated scores back to metrics so they can be exported
+    for (const auto& score : currentScores) {
+        if (currentResults.find(score.name) != currentResults.end()) {
+            currentResults[score.name].score = score.totalScore;
+        }
+    }
 
     // Update results page on main thread
     QMetaObject::invokeMethod(this, [this]() {
@@ -743,7 +814,9 @@ void MainWindow::updateResultsPage(const std::map<std::string, PerformanceMetric
         QStringList categories;
         
         for (const auto& score : scores) {
-            *set0 << score.totalScore;
+            // Round to 1 decimal place for cleaner display
+            double roundedScore = std::round(score.totalScore * 10.0) / 10.0;
+            *set0 << roundedScore;
             categories << QString::fromStdString(score.name);
         }
 
@@ -871,11 +944,33 @@ void MainWindow::updateResultsPage(const std::map<std::string, PerformanceMetric
 
 void MainWindow::onExportResultsClicked()
 {
+    QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    "Export Results", "", "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)");
+                                                    "Export Results", "", 
+                                                    "CSV Files (*.csv);;Text Files (*.txt);;All Files (*)",
+                                                    &selectedFilter);
 
     if (!fileName.isEmpty()) {
+        bool isCsv = false;
+        
+        // 1. Check existing extension
         if (fileName.endsWith(".csv", Qt::CaseInsensitive)) {
+            isCsv = true;
+        } else if (fileName.endsWith(".txt", Qt::CaseInsensitive)) {
+            isCsv = false;
+        } 
+        // 2. If no extension (or unknown), check the selected filter
+        else {
+             if (selectedFilter.contains("CSV")) {
+                 fileName += ".csv";
+                 isCsv = true;
+             } else {
+                 fileName += ".txt"; // Default to text for Text Files or All Files
+                 isCsv = false;
+             }
+        }
+
+        if (isCsv) {
             // Export to CSV
             std::ofstream file(fileName.toStdString());
             if (file.is_open()) {
@@ -889,6 +984,8 @@ void MainWindow::onExportResultsClicked()
                 file.close();
                 QMessageBox::information(this, "Export Successful",
                                          "Results exported to: " + fileName);
+            } else {
+                 QMessageBox::critical(this, "Export Failed", "Could not open file for writing.");
             }
         } else {
             // Export as text report
@@ -913,6 +1010,8 @@ void MainWindow::onExportResultsClicked()
                 file.close();
                 QMessageBox::information(this, "Export Successful",
                                          "Report exported to: " + fileName);
+            } else {
+                 QMessageBox::critical(this, "Export Failed", "Could not open file for writing.");
             }
         }
     }
