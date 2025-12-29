@@ -44,9 +44,9 @@ make
 
 ## Author
 
-**Yaseen Khan**
-**Rana Abdullah**
-**Anas Mehboob**  
+- **Yaseen Khan**
+- **Rana Abdullah**
+- **Anas Mehboob**  
 Data Structures - Semester Project
 
 ## License
