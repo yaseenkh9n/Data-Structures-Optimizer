@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTORCC OFF)
 set(CMAKE_AUTOUIC ON)
 
 # Find Qt
@@ -61,10 +61,8 @@ set(UI_FILES
     gui/results.ui
 )
 
-# Resource files
-set(RESOURCES
-    resources/resources.qrc
-)
+# Add resources
+qt_add_resources(RESOURCES resources/resources.qrc)
 
 # Create executable
 add_executable(${PROJECT_NAME}

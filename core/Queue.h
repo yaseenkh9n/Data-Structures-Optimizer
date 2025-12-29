@@ -87,7 +87,6 @@ public:
         return rearPtr->data;
     }
 
-    // print all elements
 
 };
 

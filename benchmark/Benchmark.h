@@ -120,16 +120,14 @@ public:
         return newValues;
     }
 
-    // update progress (console or GUI)
     void updateProgress(int pct, const string& msg) {
         if (progressCallback) {
             progressCallback(pct, msg);
         }
     }
 
-    // test BST
-    PerformanceMetrics testBST(const vector<T>& initialData,
-                               const OperationProfile& profile) {
+    // test Heap
+    PerformanceMetrics testBST(const vector<T>& initialData, const OperationProfile& profile) {
         PerformanceMetrics m("BST");
         m.dataSize = initialData.size();
         BST<T> bst;

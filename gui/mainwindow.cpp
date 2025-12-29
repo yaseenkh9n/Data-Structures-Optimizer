@@ -519,44 +519,58 @@ void MainWindow::onStartAnalysisFromNewPage()
     progress->setMinimumDuration(0);
     progress->setRange(0, 0); // Indeterminate progress
     
+    // Increase width to make it look like a bar
+    progress->setFixedWidth(500);
+    progress->setMinimumHeight(100);
+    progress->setMaximumHeight(150);
+    
     // Style the progress dialog
     progress->setStyleSheet(R"(
         QProgressDialog { 
             background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 #0d1117, stop:1 #151b25);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 20px;
             color: #ffffff;
+            padding: 20px;
         }
         QLabel { 
             color: #ffffff; 
-            font-size: 15px; 
-            font-weight: 500;
+            font-size: 16px; 
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding: 5px;
         }
         QPushButton { 
-            background: rgba(255, 255, 255, 0.1); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            color: white; 
-            font-weight: bold;
+            background: rgba(255, 255, 255, 0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            padding: 10px 25px; 
+            border-radius: 12px; 
+            color: rgba(255, 255, 255, 0.9); 
+            font-weight: 600;
+            margin-top: 15px;
         }
         QPushButton:hover { 
-            background: rgba(239, 68, 68, 0.1); 
-            border: 1px solid rgba(239, 68, 68, 0.3); 
-            color: #ef4444; 
+            background: rgba(239, 68, 68, 0.15); 
+            border: 1px solid rgba(239, 68, 68, 0.4); 
+            color: #ff5555; 
         }
         QProgressBar { 
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-radius: 8px; 
             text-align: center; 
             color: white; 
-            height: 20px;
+            height: 12px;
             font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
         }
         QProgressBar::chunk { 
-            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 #00d4ff, stop:1 #0099cc);
-            border-radius: 10px; 
+            background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, 
+                stop:0 #00d4ff, 
+                stop:0.5 #00b8e6,
+                stop:1 #00d4ff);
+            border-radius: 8px; 
         }
     )");
     
