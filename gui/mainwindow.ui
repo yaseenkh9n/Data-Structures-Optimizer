@@ -139,9 +139,10 @@ QPushButton#secondaryButton {
     color: rgba(220, 230, 245, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
-    padding: 15px 40px;
+    padding: 15px 100px;
     font-size: 15px;
-    font-weight: 500;
+    font-weight: 600;
+    
 }
 
 QPushButton#secondaryButton:hover {
@@ -629,7 +630,7 @@ Data Structure Optimizer</string>
          <item>
           <widget class="QPushButton" name="secondaryButton">
            <property name="text">
-            <string>Load Previous Results</string>
+            <string>About</string>
            </property>
           </widget>
          </item>

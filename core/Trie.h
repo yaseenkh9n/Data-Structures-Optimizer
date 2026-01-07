@@ -108,41 +108,34 @@ private:
     }
 
 public:
-    // constructor
     Trie() : wordCount(0), memoryUsed(sizeof(TrieNode)) {
         root = new TrieNode();
     }
 
-    // destructor
     ~Trie() {
         freeTrie(root);
     }
 
-    // insert word
     void insert(const string& word) {
         if (word.empty())
             throw invalid_argument("Empty word not allowed");
         insertHelper(root, word, 0);
     }
 
-    // search for word
     bool search(const string& word) const {
         return searchHelper(root, word, 0);
     }
 
-    // remove word
     void remove(const string& word) {
         removeHelper(root, word, 0);
     }
 
-    // get all words
     vector<string> getAllWords() const {
         vector<string> result;
         collectWords(root, "", result);
         return result;
     }
 
-    // check if prefix exists
     bool startsWith(const string& prefix) const {
         TrieNode* node = root;
         for (char ch : prefix) {
@@ -153,17 +146,14 @@ public:
         return true;
     }
 
-    // get word count
     int size() const {
         return wordCount;
     }
 
-    // check if empty
     bool isEmpty() const {
         return wordCount == 0;
     }
 
-    // estimate memory usage
     size_t estimateMemory() const {
         return memoryUsed;
     }

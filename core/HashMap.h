@@ -8,17 +8,9 @@
 #include <algorithm>
 #include <stdexcept>
 
-/**
- * @brief HashMap implementation with separate chaining for collision resolution
- * @tparam K Key type (int, string, or any hashable type)
- * @tparam V Value type
- */
 template<typename K, typename V>
 class HashMap {
 private:
-    /**
-     * @brief Node structure for linked list chaining
-     */
     struct Node {
         K key;
         V value;
@@ -27,93 +19,60 @@ private:
         Node(const K& k, const V& v) : key(k), value(v), next(nullptr) {}
     };
 
-    Node** buckets;           // Array of pointers to linked list heads
-    int capacity;             // Number of buckets
-    int size;                 // Number of elements stored
-    double maxLoadFactor;     // Threshold for rehashing (default 0.75)
+    Node** buckets;
+    int capacity;
+    int size;
+    double maxLoadFactor;
 
-    /**
-     * @brief Hash function for different key types
-     * @param key The key to hash
-     * @return Bucket index
-     */
     int hash(const K& key) const {
         if constexpr (std::is_same_v<K, int>) {
-            // Simple modulo hashing for integers
             return std::abs(key) % capacity;
         }
         else if constexpr (std::is_same_v<K, std::string>) {
-            // DJB2 hash algorithm for strings
             unsigned long hashValue = 5381;
             for (char c : key) {
-                hashValue = ((hashValue << 5) + hashValue) + c; // hash * 33 + c
+                hashValue = ((hashValue << 5) + hashValue) + c;
             }
             return hashValue % capacity;
         }
         else {
-            // Use std::hash for other types
             return std::hash<K>{}(key) % capacity;
         }
     }
 
-    /**
-     * @brief Rehash the table when load factor exceeds threshold
-     * Time Complexity: O(n) where n is number of elements
-     */
     void rehash() {
         int oldCapacity = capacity;
         Node** oldBuckets = buckets;
 
-        // Double the capacity
         capacity *= 2;
-        buckets = new Node*[capacity]();  // Initialize all to nullptr
-        size = 0;  // Reset size, will be recounted during reinsertion
+        buckets = new Node*[capacity]();
+        size = 0;
 
-        // Reinsert all elements into new table
         for (int i = 0; i < oldCapacity; i++) {
             Node* current = oldBuckets[i];
             while (current != nullptr) {
-                insert(current->key, current->value);  // Reinsert
+                insert(current->key, current->value);
                 Node* temp = current;
                 current = current->next;
-                delete temp;  // Free old node
+                delete temp;
             }
         }
 
-        delete[] oldBuckets;  // Free old bucket array
-
-
+        delete[] oldBuckets;
     }
 
 public:
-    /**
-     * @brief Constructor
-     * @param initialCapacity Initial number of buckets (default 16)
-     * @param loadFactor Maximum load factor before rehashing (default 0.75)
-     */
     HashMap(int initialCapacity = 16, double loadFactor = 0.75)
         : capacity(initialCapacity), size(0), maxLoadFactor(loadFactor) {
-        buckets = new Node*[capacity]();  // Initialize all pointers to nullptr
+        buckets = new Node*[capacity]();
     }
 
-    /**
-     * @brief Destructor - frees all allocated memory
-     */
     ~HashMap() {
         clear();
         delete[] buckets;
     }
 
-    /**
-     * @brief Insert or update a key-value pair
-     * @param key The key to insert
-     * @param value The value to associate with the key
-     *
-     * Time Complexity: O(1) average, O(n) worst case
-     * Space Complexity: O(1)
-     */
     void insert(const K& key, const V& value) {
-        // Check if rehashing is needed
         if (getLoadFactor() >= maxLoadFactor) {
             rehash();
         }
@@ -121,49 +80,34 @@ public:
         int index = hash(key);
         Node* current = buckets[index];
 
-        // Check if key already exists (update value)
         while (current != nullptr) {
             if (current->key == key) {
-                current->value = value;  // Update existing value
+                current->value = value;
                 return;
             }
             current = current->next;
         }
 
-        // Key doesn't exist, insert new node at head of chain
         Node* newNode = new Node(key, value);
         newNode->next = buckets[index];
         buckets[index] = newNode;
         size++;
     }
 
-    /**
-     * @brief Search for a value by key
-     * @param key The key to search for
-     * @return Pointer to value if found, nullptr otherwise
-     *
-     * Time Complexity: O(1) average, O(n) worst case
-     */
     V* search(const K& key) {
         int index = hash(key);
         Node* current = buckets[index];
 
-        // Traverse the chain at this bucket
         while (current != nullptr) {
             if (current->key == key) {
-                return &(current->value);  // Return pointer to value
+                return &(current->value);
             }
             current = current->next;
         }
 
-        return nullptr;  // Key not found
+        return nullptr;
     }
 
-    /**
-     * @brief Check if a key exists in the map
-     * @param key The key to check
-     * @return true if key exists, false otherwise
-     */
     bool contains(const K& key) const {
         int index = hash(key);
         Node* current = buckets[index];
@@ -178,13 +122,6 @@ public:
         return false;
     }
 
-    /**
-     * @brief Remove a key-value pair
-     * @param key The key to remove
-     * @return true if key was found and removed, false otherwise
-     *
-     * Time Complexity: O(1) average, O(n) worst case
-     */
     bool remove(const K& key) {
         int index = hash(key);
         Node* current = buckets[index];
@@ -192,12 +129,9 @@ public:
 
         while (current != nullptr) {
             if (current->key == key) {
-                // Found the key, remove it
                 if (prev == nullptr) {
-                    // Removing first node in chain
                     buckets[index] = current->next;
                 } else {
-                    // Removing middle or end node
                     prev->next = current->next;
                 }
                 delete current;
@@ -208,13 +142,9 @@ public:
             current = current->next;
         }
 
-        return false;  // Key not found
+        return false;
     }
 
-    /**
-     * @brief Remove all elements from the map
-     * Time Complexity: O(n)
-     */
     void clear() {
         for (int i = 0; i < capacity; i++) {
             Node* current = buckets[i];
@@ -228,56 +158,29 @@ public:
         size = 0;
     }
 
-    /**
-     * @brief Get the number of elements in the map
-     * @return Number of key-value pairs
-     */
     int getSize() const {
         return size;
     }
 
-    /**
-     * @brief Get the number of buckets
-     * @return Current capacity
-     */
     int getCapacity() const {
         return capacity;
     }
 
-    /**
-     * @brief Calculate current load factor
-     * @return Load factor (size / capacity)
-     */
     double getLoadFactor() const {
         return static_cast<double>(size) / capacity;
     }
 
-    /**
-     * @brief Check if map is empty
-     * @return true if no elements, false otherwise
-     */
     bool isEmpty() const {
         return size == 0;
     }
 
-    /**
-     * @brief Estimate memory usage in bytes
-     * @return Approximate memory consumption
-     */
     size_t getMemoryUsage() const {
-        size_t memory = sizeof(*this);              // Object overhead
-        memory += capacity * sizeof(Node*);         // Bucket array
-        memory += size * sizeof(Node);              // All nodes
+        size_t memory = sizeof(*this);
+        memory += capacity * sizeof(Node*);
+        memory += size * sizeof(Node);
         return memory;
     }
 
-
-
-
-    /**
-     * @brief Get all keys in the map
-     * @return Vector of all keys
-     */
     std::vector<K> getKeys() const {
         std::vector<K> keys;
         keys.reserve(size);
@@ -293,10 +196,6 @@ public:
         return keys;
     }
 
-    /**
-     * @brief Get collision statistics for benchmarking
-     * @return Pair of (max_chain_length, average_chain_length)
-     */
     std::pair<int, double> getCollisionStats() const {
         int maxChainLength = 0;
         int usedBuckets = 0;
@@ -323,4 +222,4 @@ public:
     }
 };
 
-#endif // HASHMAP_H
+#endif

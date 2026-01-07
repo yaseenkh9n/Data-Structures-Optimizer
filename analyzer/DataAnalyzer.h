@@ -11,7 +11,6 @@
 class DataAnalyzer {
 public:
 
-    // ================= DATA PROFILE =================
     struct DataProfile {
         size_t dataSize;
         std::string dataType;
@@ -22,19 +21,16 @@ public:
         double averageValue;
         double averageStringLength;
 
-        // user intent flags
         bool needsRangeQueries;
         bool needsPrefixSearch;
         bool needsPriorityQueue;
         bool memoryConstrained;
         bool speedCritical;
 
-        // graph-related flags
         bool hasRelationships;
         bool needsConnectivity;
     };
 
-    // ================= INTEGER DATA =================
     DataProfile analyzeIntegerData(const std::vector<int>& data) {
         DataProfile profile{};
         profile.dataSize = data.size();
@@ -57,7 +53,6 @@ public:
         return profile;
     }
 
-    // ================= STRING DATA =================
     DataProfile analyzeStringData(const std::vector<std::string>& data) {
         DataProfile profile{};
         profile.dataSize = data.size();
@@ -78,7 +73,6 @@ public:
         profile.averageStringLength = totalLength / data.size();
         profile.averageValue = profile.averageStringLength;
 
-        // pattern: same starting character
         profile.hasPattern = false;
         if (!data[0].empty()) {
             char firstChar = data[0][0];
@@ -96,7 +90,6 @@ public:
         return profile;
     }
 
-    // ================= DOUBLE DATA =================
     DataProfile analyzeDoubleData(const std::vector<double>& data) {
         DataProfile profile{};
         profile.dataSize = data.size();
@@ -119,10 +112,6 @@ public:
         return profile;
     }
 
-    // ================= PRINT =================
-
-
-    // ================= TO STRING =================
     std::string profileToString(const DataProfile& profile) {
         std::string out;
         out += "=== Data Profile ===\n";
@@ -143,7 +132,6 @@ public:
 
 private:
 
-    // ================= HELPER FUNCTIONS=================
     template <typename T>
     bool isSorted(const std::vector<T>& data) {
         return std::is_sorted(data.begin(), data.end());

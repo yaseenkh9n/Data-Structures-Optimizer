@@ -38,7 +38,7 @@ public:
 private slots:
     void onSidebarItemClicked(int index);
     void onStartAnalysisClicked();
-    void onLoadResultsClicked();
+
     void onBackButtonClicked();
     void onStartAnalysisFromNewPage();
     void onExportResultsClicked();
@@ -47,7 +47,6 @@ private slots:
     void onAboutClicked();
 
 private:
-    // Analysis Input Structure
     struct AnalysisInputs {
         std::string dataType;
         int dataSize;
@@ -94,7 +93,6 @@ private:
     std::vector<RecommendationEngine::StructureScore> currentScores;
     std::deque<std::string> recentDatasets;
     
-    // User profile
     QString userName;
 };
 

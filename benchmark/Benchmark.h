@@ -21,11 +21,9 @@
 using namespace std;
 using namespace std::chrono;
 
-// template class for benchmarking any data type
 template<typename T>
 class Benchmark {
 public:
-    // operation profile - defines test workload
     struct OperationProfile {
         int searchPercent;
         int insertPercent;
@@ -61,21 +59,17 @@ public:
         }
     };
 
-    // callback for progress updates (for GUI)
     using ProgressCallback = function<void(int percentage, const string& message)>;
 
-    // constructor
     Benchmark() : progressCallback(nullptr) {
         random_device rd;
         rng.seed(rd());
     }
 
-    // set progress callback for GUI
     void setProgressCallback(ProgressCallback callback) {
         progressCallback = callback;
     }
 
-    // measure time of any operation
     template<typename Func>
     double measureTime(Func function) {
         auto start = high_resolution_clock::now();
@@ -85,7 +79,6 @@ public:
         return elapsed.count();
     }
 
-    // generate random keys from existing data
     vector<T> generateRandomKeys(const vector<T>& data, int count) {
         vector<T> keys;
         uniform_int_distribution<int> dist(0, data.size() - 1);
@@ -95,7 +88,6 @@ public:
         return keys;
     }
 
-    // generate new random values
     vector<T> generateNewValues(int count) {
         vector<T> newValues;
 

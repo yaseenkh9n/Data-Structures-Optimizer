@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+54d937d48b7d37947742245c89c0de04 CMakeFiles/DataStructureOptimizer_autogen
+dad86cee75dacca40b6f100c1ea2176b DataStructureOptimizer_autogen/timestamp
+261cd78129188f9122419f8564e798a5 qrc_resources.cpp

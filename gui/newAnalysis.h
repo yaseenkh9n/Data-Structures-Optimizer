@@ -15,10 +15,8 @@ public:
     explicit NewAnalysis(QWidget *parent = nullptr);
     ~NewAnalysis();
     
-    // Override event filter to block wheel events on sliders
     bool eventFilter(QObject *obj, QEvent *event) override;
 
-    // Public getters for UI elements (or make ui public)
     Ui::NewAnalysis* getUi() { return ui; }
     QString getUploadedFilePath() const { return uploadedFilePath; }
 

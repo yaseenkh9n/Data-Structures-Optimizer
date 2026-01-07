@@ -16,12 +16,10 @@ NewAnalysis::NewAnalysis(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Connect sliders to update percentages
     QSlider* searchSlider = findChild<QSlider*>("searchSlider");
     QSlider* insertSlider = findChild<QSlider*>("insertSlider");
     QSlider* deleteSlider = findChild<QSlider*>("deleteSlider");
     
-    // Install event filter to prevent accidental scrolling
     if (searchSlider) searchSlider->installEventFilter(this);
     if (insertSlider) insertSlider->installEventFilter(this);
     if (deleteSlider) deleteSlider->installEventFilter(this);
@@ -66,7 +64,6 @@ NewAnalysis::NewAnalysis(QWidget *parent)
         connect(uploadBtn, &QPushButton::clicked, this, &NewAnalysis::onUploadFileClicked);
     }
 
-    // Initial update
     updatePercentages();
 }
 
@@ -75,7 +72,6 @@ void NewAnalysis::onDataSourceChanged(int index)
     QPushButton* uploadBtn = findChild<QPushButton*>("uploadFileButton");
     if (!uploadBtn) return;
 
-    // Index 1 is "Upload from File"
     if (index == 1) {
         uploadBtn->setEnabled(true);
     } else {
@@ -93,28 +89,24 @@ void NewAnalysis::onUploadFileClicked()
         QFileInfo fileInfo(fileName);
         QString ext = fileInfo.suffix().toLower();
 
-        // 1. Strict Extension Check
         if (ext != "csv" && ext != "txt") {
             QMessageBox::critical(this, "Invalid File Type", 
                 "The selected file type is not supported.\nPlease select a .csv or .txt file.");
             return;
         }
 
-        // 2. Open File to Validate Content
         QFile file(fileName);
         if (!file.open(QIODevice::ReadOnly)) {
              QMessageBox::critical(this, "Read Error", "Could not open file for reading.");
              return;
         }
 
-        // 3. Check for Empty File
         if (file.size() == 0) {
              QMessageBox::critical(this, "Msg", "The selected file is empty.");
              file.close();
              return;
         }
 
-        // 4. Binary Content Check (First 1024 bytes)
         QByteArray chunk = file.read(1024);
         if (chunk.contains('\0')) {
              QMessageBox::critical(this, "Invalid Content", "The file appears to be binary. Please upload a valid text dataset.");
@@ -123,7 +115,6 @@ void NewAnalysis::onUploadFileClicked()
         }
         file.close();
 
-        // If all checks pass
         uploadedFilePath = fileName;
         
         QPushButton* uploadBtn = findChild<QPushButton*>("uploadFileButton");
@@ -142,9 +133,8 @@ bool NewAnalysis::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::Wheel) {
         if (qobject_cast<QSlider*>(obj)) {
-            // Ignore wheel events on sliders to prevent accidental value changes while scrolling the page
             event->ignore();
-            return true; // We handled (consumed) the event
+            return true;
         }
     }
     return QWidget::eventFilter(obj, event);

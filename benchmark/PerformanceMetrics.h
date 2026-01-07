@@ -14,26 +14,21 @@ using namespace std;
 
 class PerformanceMetrics {
 public:
-    // timing data in milliseconds
     double insertTime;
     double searchTime;
     double deleteTime;
     double totalTime;
 
-    // operation counts
     int insertCount;
     int searchCount;
     int deleteCount;
 
-    // memory usage in bytes
     size_t memoryUsed;
 
-    // metadata
     string structureName;
     int dataSize;
-    double score; // Stored score from recommendation engine
+    double score;
 
-    // constructor
     PerformanceMetrics(string name = "Unknown") : structureName(name) {
         insertTime = searchTime = deleteTime = totalTime = 0.0;
         insertCount = searchCount = deleteCount = 0;
@@ -42,7 +37,6 @@ public:
         score = 0.0;
     }
 
-    // calculate average times
     double getAverageInsertTime() const {
         return insertCount > 0 ? insertTime / insertCount : 0.0;
     }
@@ -55,7 +49,6 @@ public:
         return deleteCount > 0 ? deleteTime / deleteCount : 0.0;
     }
 
-    // operations per second
     double getInsertThroughput() const {
         return insertTime > 0 ? (insertCount / insertTime) * 1000.0 : 0.0;
     }
@@ -68,15 +61,10 @@ public:
         return deleteTime > 0 ? (deleteCount / deleteTime) * 1000.0 : 0.0;
     }
 
-    // memory per element
     double getMemoryPerElement() const {
         return dataSize > 0 ? static_cast<double>(memoryUsed) / dataSize : 0.0;
     }
 
-    // print report to console
-
-
-    // convert to string for GUI display
     string toString() const {
         string result = "\n" + structureName + " Performance Report:\n";
         result += "Dataset: " + to_string(dataSize) + " elements\n";
@@ -106,7 +94,6 @@ public:
         return result;
     }
 
-    // export to CSV format
     string toCSV() const {
         std::stringstream ss;
         ss.imbue(std::locale::classic()); // Force C locale (dot for decimals)

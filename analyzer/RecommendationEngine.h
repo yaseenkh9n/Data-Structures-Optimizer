@@ -16,7 +16,6 @@ using namespace std;
 
 class RecommendationEngine {
 public:
-    // ================= WEIGHTS =================
     struct Weights {
         double timeWeight;
         double spaceWeight;
@@ -24,7 +23,7 @@ public:
 
         Weights(double t = 0.5, double s = 0.3, double suit = 0.2)
             : timeWeight(t), spaceWeight(s), suitabilityWeight(suit) {
-            // normalize if sum != 1.0
+
             double sum = t + s + suit;
             if (sum != 1.0) {
                 timeWeight /= sum;
@@ -36,7 +35,6 @@ public:
 
     };
 
-    // ================= OPERATION PROFILE =================
     struct OperationProfile {
         int searchPercent;
         int insertPercent;
@@ -46,7 +44,6 @@ public:
             : searchPercent(s), insertPercent(i), deletePercent(d) {}
     };
 
-    // ================= STRUCTURE SCORE =================
     struct StructureScore {
         string name;
         double totalScore;
@@ -74,10 +71,9 @@ public:
         }
     };
 
-    // ================= CONSTRUCTOR =================
     RecommendationEngine() : defaultWeights(0.5, 0.3, 0.2) {}
 
-    // ================= MAIN RANKING FUNCTION =================
+    // MAIN RANKING FUNCTION
     vector<StructureScore> rankStructures(
         const map<string, PerformanceMetrics>& results,
         const DataAnalyzer::DataProfile& dataProfile,
@@ -89,23 +85,19 @@ public:
         for (const auto& pair : results) {
             StructureScore score(pair.first);
 
-            // calculate individual scores
             score.timeScore = calculateTimeScore(pair.second, opProfile);
             score.spaceScore = calculateSpaceScore(pair.second, dataProfile);
             score.suitabilityScore = calculateSuitability(pair.first, dataProfile, opProfile);
 
-            // calculate weighted total
             score.totalScore = (score.timeScore * weights.timeWeight) +
                                (score.spaceScore * weights.spaceWeight) +
                                (score.suitabilityScore * weights.suitabilityWeight);
 
-            // generate reasoning
             score.reasoning = generateReasoning(pair.first, score, pair.second, dataProfile, opProfile);
 
             scores.push_back(score);
         }
 
-        // sort by total score (descending)
         sort(scores.begin(), scores.end(),
              [](const StructureScore& a, const StructureScore& b) {
                  return a.totalScore > b.totalScore;
@@ -114,9 +106,8 @@ public:
         return scores;
     }
 
-    // ================= TIME SCORE =================
-    double calculateTimeScore(const PerformanceMetrics& metrics,
-                              const OperationProfile& profile) {
+    // TIME SCORE 
+    double calculateTimeScore(const PerformanceMetrics& metrics, const OperationProfile& profile) {
         // weighted average of operation times
         double weightedTime = 0.0;
         double totalWeight = 0.0;
@@ -151,9 +142,8 @@ public:
         return min(100.0, max(0.0, score));
     }
 
-    // ================= SPACE SCORE =================
-    double calculateSpaceScore(const PerformanceMetrics& metrics,
-                               const DataAnalyzer::DataProfile& profile) {
+    // SPACE SCORE 
+    double calculateSpaceScore(const PerformanceMetrics& metrics, const DataAnalyzer::DataProfile& profile) {
         double memPerElement = metrics.getMemoryPerElement();
 
         // base score
@@ -179,7 +169,7 @@ public:
         return min(100.0, max(0.0, score));
     }
 
-    // ================= SUITABILITY SCORE =================
+    //  SUITABILITY SCORE 
     double calculateSuitability(const string& structureName,
                                 const DataAnalyzer::DataProfile& profile,
                                 const OperationProfile& opProfile) {
@@ -273,7 +263,7 @@ public:
         return min(100.0, max(0.0, score));
     }
 
-    // ================= GENERATE REASONING =================
+    //  GENERATE REASONING
     string generateReasoning(const string& structureName,
                              const StructureScore& score,
                              const PerformanceMetrics& metrics,
@@ -351,7 +341,7 @@ public:
         return ss.str();
     }
 
-    // ================= GENERATE RECOMMENDATION =================
+    //  GENERATE RECOMMENDATION
     string generateRecommendation(const vector<StructureScore>& scores) {
         if (scores.empty()) {
             return "No data structures were tested.";
@@ -391,7 +381,7 @@ public:
         return ss.str();
     }
 
-    // ================= EXPLAIN CHOICE =================
+    //  EXPLAIN CHOICE 
     string explainChoice(const StructureScore& winner) {
         stringstream ss;
 
@@ -436,7 +426,7 @@ public:
         return ss.str();
     }
 
-    // ================= COMPARE TWO STRUCTURES =================
+    //  COMPARE TWO STRUCTURES 
     string compareStructures(const StructureScore& s1, const StructureScore& s2) {
         stringstream ss;
         ss << fixed << setprecision(2);
@@ -466,7 +456,7 @@ public:
         return ss.str();
     }
 
-    // ================= SUGGEST WEIGHTS =================
+    //  SUGGEST WEIGHTS 
     Weights suggestWeights(const DataAnalyzer::DataProfile& profile) {
         if (profile.speedCritical) {
             return Weights(0.7, 0.2, 0.1); // prioritize speed

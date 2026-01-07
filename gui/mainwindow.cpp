@@ -189,7 +189,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Dashboard buttons
     connect(ui->primaryButton, &QPushButton::clicked, this, &MainWindow::onStartAnalysisClicked);
-    connect(ui->secondaryButton, &QPushButton::clicked, this, &MainWindow::onLoadResultsClicked);
+    connect(ui->secondaryButton, &QPushButton::clicked, this, &MainWindow::onAboutClicked);
 
     // Analysis page buttons
     connect(analysisPage->findChild<QPushButton*>("backButton"), &QPushButton::clicked,
@@ -252,165 +252,7 @@ void MainWindow::onStartAnalysisClicked()
     stack->setCurrentIndex(1);
 }
 
-void MainWindow::onLoadResultsClicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    "Load Previous Results", "", "CSV Files (*.csv);;All Files (*)");
 
-    if (!fileName.isEmpty()) {
-        QFileInfo fileInfo(fileName);
-        if (fileInfo.suffix().toLower() != "csv") {
-            QMessageBox::critical(this, "Invalid File Type", "Please select a .csv file.");
-            return;
-        }
-
-        QFile qFile(fileName);
-        if (qFile.size() == 0) {
-             QMessageBox::critical(this, "Invalid File", "The selected file is empty.");
-             return;
-        }
-        
-        if (!qFile.open(QIODevice::ReadOnly)) {
-             QMessageBox::critical(this, "Error", "Could not open file for reading.");
-             return;
-        }
-        
-        // Binary Check
-        QByteArray chunk = qFile.read(1024);
-        if (chunk.contains('\0')) {
-             QMessageBox::critical(this, "Invalid Content", "The file appears to be binary. Please select a valid CSV results file.");
-             qFile.close();
-             return;
-        }
-        qFile.close();
-
-        // OPEN FILE
-        if (!qFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-             QMessageBox::critical(this, "Error", "Could not open file for reading text.");
-             return;
-        }
-        
-
-        
-        QTextStream in(&qFile);
-        QString line = in.readLine();
-        
-        // Validate Header (Simple check for existence of key columns)
-        if (line.isNull() || (!line.contains("Structure") && !line.contains("DataSize"))) {
-             QMessageBox::warning(this, "Unknown Format", "The CSV header does not match the expected format.\nExpected: Structure,DataSize,InsertTime...");
-             return;
-        }
-
-        currentResults.clear();
-        currentScores.clear();
-        
-        int successCount = 0;
-        int failCount = 0;
-        
-        qDebug() << "Starting CSV parse. File:" << fileName;
-
-
-        while (!in.atEnd()) {
-            QString dataLine = in.readLine();
-            if (dataLine.trimmed().isEmpty()) continue;
-
-            QStringList parts = dataLine.split(',');
-            if (parts.size() < 8) {
-                failCount++;
-                continue; 
-            }
-
-            // Clean parts (trim whitespace)
-            for (auto& part : parts) part = part.trimmed();
-
-            // Parse using QLocale::C (standard) first, then try System
-            QLocale cLocale = QLocale::c();
-            QLocale sysLocale = QLocale::system();
-            
-            PerformanceMetrics metrics(parts[0].toStdString());
-            bool ok = true;
-            bool totalOk = true;
-
-            // Helper lambda for robust double parsing
-            auto parseDouble = [&](const QString& str) -> double {
-                bool conversionOk = false;
-                double val = cLocale.toDouble(str, &conversionOk);
-                if (!conversionOk) {
-                    val = sysLocale.toDouble(str, &conversionOk);
-                }
-                if (!conversionOk) totalOk = false;
-                return val;
-            };
-
-            metrics.dataSize = parts[1].toInt(&ok); 
-            if (!ok) totalOk = false;
-
-            metrics.insertTime = parseDouble(parts[2]);
-            metrics.searchTime = parseDouble(parts[3]);
-            metrics.deleteTime = parseDouble(parts[4]);
-            metrics.totalTime = parseDouble(parts[5]);
-            metrics.memoryUsed = static_cast<size_t>(parseDouble(parts[6]));
-            
-            if (totalOk) {
-                // If we have a Score column (9th column), read it
-                if (parts.size() >= 9) {
-                    double importedScore = parseDouble(parts[8]);
-                    metrics.score = importedScore;
-                } else {
-                    // Fallback for old files
-                    metrics.score = 1000.0 / (metrics.totalTime + 1.0); 
-                }
-                
-                currentResults[metrics.structureName] = metrics;
-
-                RecommendationEngine::StructureScore score;
-                score.name = metrics.structureName;
-                score.totalScore = metrics.score; 
-                currentScores.push_back(score);
-                successCount++;
-            } else {
-                qDebug() << "Row failed parsing. Parts:" << parts;
-                failCount++;
-            }
-        }
-        
-        // Sort scores
-        std::sort(currentScores.begin(), currentScores.end(), 
-                 [](const RecommendationEngine::StructureScore& a, const RecommendationEngine::StructureScore& b) {
-                     return a.totalScore > b.totalScore;
-                 });
-                 
-        // VALIDATION: Check if we actually loaded any valid data
-        if (currentResults.empty()) {
-            QString msg = "No valid performance data could be parsed.";
-            if (failCount > 0) {
-                msg += QString("\n\n%1 rows failed numeric parsing. Please check the decimal delimiters (dot vs comma) or file format.").arg(failCount);
-            }
-            QMessageBox::critical(this, "Invalid Data", msg);
-            return;
-        }
-
-        // Normalize scores to percentage roughly
-        if (!currentScores.empty()) {
-            double maxScore = currentScores[0].totalScore;
-            for (auto& score : currentScores) {
-                score.totalScore = (score.totalScore / maxScore) * 100.0;
-            }
-        }
-
-        updateResultsPage(currentResults, currentProfile, currentScores);
-        
-        // Update recent datasets for loaded file
-        QFileInfo fi(fileName);
-        recentDatasets.push_front(fi.fileName().toStdString());
-        if (recentDatasets.size() > 3) recentDatasets.pop_back();
-        updateDashboard();
-        
-        stack->setCurrentIndex(2); // Go to results
-        
-        QMessageBox::information(this, "Success", "Results loaded successfully.");
-    }
-}
 
 void MainWindow::onBackButtonClicked()
 {
@@ -1184,7 +1026,8 @@ void MainWindow::onSettingsClicked()
 
 void MainWindow::onAboutClicked()
 {
-    stack->setCurrentIndex(3);
+    // Update sidebar selection which triggers onSidebarItemClicked and changes the page
+    ui->sidebarList->setCurrentRow(3);
 }
 
 void MainWindow::setupAboutPage() {

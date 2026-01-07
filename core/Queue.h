@@ -23,27 +23,22 @@ private:
     int count;
 
 public:
-    // constructor
     Queue() : frontPtr(nullptr), rearPtr(nullptr), count(0) {}
 
-    // destructor
     ~Queue() {
         while (!isEmpty()) {
             dequeue();
         }
     }
 
-    // check if empty
     bool isEmpty() const {
         return frontPtr == nullptr;
     }
 
-    // get size
     int size() const {
         return count;
     }
 
-    // add element at rear
     void enqueue(const T& val) {
         QNode<T>* newNode = new QNode<T>(val);
 
@@ -56,7 +51,6 @@ public:
         count++;
     }
 
-    // remove element from front
     void dequeue() {
         if (isEmpty()) {
             throw runtime_error("Queue is empty");
@@ -71,7 +65,6 @@ public:
             rearPtr = nullptr;
     }
 
-    // get front element
     T front() const {
         if (isEmpty()) {
             throw runtime_error("Queue is empty");
@@ -79,7 +72,6 @@ public:
         return frontPtr->data;
     }
 
-    // get rear element
     T back() const {
         if (isEmpty()) {
             throw runtime_error("Queue is empty");

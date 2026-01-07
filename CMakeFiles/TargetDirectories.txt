@@ -1,0 +1,5 @@
+/run/media/yaseen-khan/personal/DSA/DSA project (copy 1)/CMakeFiles/DataStructureOptimizer.dir
+/run/media/yaseen-khan/personal/DSA/DSA project (copy 1)/CMakeFiles/edit_cache.dir
+/run/media/yaseen-khan/personal/DSA/DSA project (copy 1)/CMakeFiles/rebuild_cache.dir
+/run/media/yaseen-khan/personal/DSA/DSA project (copy 1)/CMakeFiles/DataStructureOptimizer_autogen_timestamp_deps.dir
+/run/media/yaseen-khan/personal/DSA/DSA project (copy 1)/CMakeFiles/DataStructureOptimizer_autogen.dir
